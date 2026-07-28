@@ -14,6 +14,8 @@ import {
 import { placeOrder } from "@/app/actions/place-order";
 import { saveRecentOrderId } from "@/lib/utils/order-tracking";
 
+import UnavailableItemsBanner from "./UnavailableItemsBanner";
+
 import {
     User,
     Phone,
@@ -21,14 +23,18 @@ import {
     CreditCard,
     Clock,
     Truck,
+    AlertCircle,
 } from "lucide-react";
+
 import { toast } from "sonner";
+import { useMemo, useState } from "react";
 
 export default function CheckoutForm() {
     const {
         cart,
         totalPrice,
         clearCart,
+        removeMultipleItems,
     } = useCart();
 
     const {
@@ -51,7 +57,23 @@ export default function CheckoutForm() {
     const payment = watch("paymentMethod");
 
     const router = useRouter();
+
+    const [checkoutError, setCheckoutError] = useState("");
+
     const availability = getRestaurantAvailability();
+    console.log("Availability:", availability);
+
+    const unavailableItems = useMemo(() => {
+        if (!availability.currentMeal) {
+            return [];
+        }
+        const currentMeal = availability.currentMeal;
+
+        return cart.filter(
+            (item) =>
+                !item.categories.includes(currentMeal)
+        );
+    }, [cart, availability.currentMeal]);
 
     if (!availability.isOpen) {
         return (
@@ -68,12 +90,23 @@ export default function CheckoutForm() {
     }
 
     async function onSubmit(data: CheckoutFormData) {
+        setCheckoutError("");
+
         const latestAvailability = getRestaurantAvailability();
 
         if (!latestAvailability.isOpen) {
+            setCheckoutError(latestAvailability.message);
             toast.error(latestAvailability.message);
             return;
         }
+
+        if (unavailableItems.length > 0) {
+            toast.error(
+                "Remove unavailable dishes before placing your order."
+            );
+            return;
+        }
+
         const paymentMethod =
             data.paymentMethod === "COD"
                 ? "cash_on_delivery"
@@ -82,7 +115,6 @@ export default function CheckoutForm() {
                     : "easypaisa";
 
         try {
-
             const result = await placeOrder({
                 customerName: data.fullName,
                 phone: data.phone,
@@ -107,25 +139,21 @@ export default function CheckoutForm() {
                 })),
             });
 
-
             saveRecentOrderId(result.orderId);
 
             clearCart();
 
             router.push(`/order-success?id=${result.orderId}`);
-
-
         } catch (error) {
-
             const message =
                 error instanceof Error
                     ? error.message
                     : "Unable to place order.";
 
+            setCheckoutError(message);
+
             toast.error(message);
-
         }
-
     }
 
     return (
@@ -133,6 +161,23 @@ export default function CheckoutForm() {
             onSubmit={handleSubmit(onSubmit)}
             className="space-y-8"
         >
+            {unavailableItems.length > 0 && (
+                <UnavailableItemsBanner
+                    items={unavailableItems}
+                    onRemoveItem={(id, variantId) =>
+                        removeMultipleItems([{ id, variantId }])
+                    }
+                    onRemoveAll={() =>
+                        removeMultipleItems(
+                            unavailableItems.map((item) => ({
+                                id: item.id,
+                                variantId: item.variantId,
+                            }))
+                        )
+                    }
+                />
+            )}
+
             {/* Customer Information */}
 
             <section className="rounded-3xl bg-white p-8 shadow-soft">
@@ -311,12 +356,35 @@ export default function CheckoutForm() {
                 </div>
             </section>
 
+            {checkoutError && (
+                <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
+                    <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+
+                    <div>
+                        <p className="font-semibold">
+                            Unable to place order
+                        </p>
+
+                        <p className="text-sm">
+                            {checkoutError}
+                        </p>
+                    </div>
+                </div>
+            )}
+
             <button
                 type="submit"
-                disabled={isSubmitting}
-                className="w-full rounded-2xl bg-sage py-4 text-lg font-semibold text-white transition hover:bg-sage-dark disabled:opacity-50"
+                disabled={
+                    isSubmitting ||
+                    unavailableItems.length > 0
+                }
+                className="w-full rounded-2xl bg-sage py-4 text-lg font-semibold text-white transition hover:bg-sage-dark disabled:cursor-not-allowed disabled:opacity-50"
             >
-                {isSubmitting ? "Placing Order..." : "Place Order"}
+                {isSubmitting
+                    ? "Placing Order..."
+                    : unavailableItems.length > 0
+                        ? "Remove Unavailable Items"
+                        : "Place Order"}
             </button>
         </form>
     );

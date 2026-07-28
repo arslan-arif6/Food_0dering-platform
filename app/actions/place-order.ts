@@ -71,6 +71,14 @@ export async function placeOrder(input: PlaceOrderInput) {
         `)
             .eq("id", item.dishId)
             .single();
+        console.log("================================");
+        console.log("Current Meal:", availability.currentMeal);
+        console.log("Dish ID:", item.dishId);
+        console.log("Dish Name:", item.dishName);
+
+        console.dir(dish, { depth: null });
+
+        console.log("================================");
 
         if (!dish) {
             throw new Error(

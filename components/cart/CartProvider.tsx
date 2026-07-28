@@ -20,6 +20,7 @@ export type CartItem = {
   price: number;
 
   quantity: number;
+  categories: string[];
 };
 
 type CartContextValue = {
@@ -42,6 +43,13 @@ type CartContextValue = {
   decreaseQuantity: (id: string, variantId: string) => void;
 
   clearCart: () => void;
+
+  removeMultipleItems: (
+    items: {
+      id: string;
+      variantId: string;
+    }[]
+  ) => void;
 };
 
 const CartContext = createContext<CartContextValue | undefined>(undefined);
@@ -150,6 +158,27 @@ export function CartProvider({
     []
   );
 
+  const removeMultipleItems = useCallback(
+    (
+      items: {
+        id: string;
+        variantId: string;
+      }[]
+    ) => {
+      setCart((current) =>
+        current.filter(
+          (cartItem) =>
+            !items.some(
+              (item) =>
+                item.id === cartItem.id &&
+                item.variantId === cartItem.variantId
+            )
+        )
+      );
+    },
+    []
+  );
+
   const clearCart = useCallback(() => {
     setCart([]);
     localStorage.removeItem("kitchenhub-cart");
@@ -184,6 +213,7 @@ export function CartProvider({
 
         addItem,
         removeItem,
+        removeMultipleItems,
         increaseQuantity,
         decreaseQuantity,
         clearCart,

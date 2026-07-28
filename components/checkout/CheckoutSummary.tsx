@@ -1,10 +1,34 @@
 "use client";
 
 import Link from "next/link";
+import { useMemo } from "react";
+
 import { useCart } from "@/components/cart/CartProvider";
+import { getRestaurantAvailability } from "@/lib/restaurant";
 
 export default function CheckoutSummary() {
     const { cart, totalPrice } = useCart();
+
+    const availability = getRestaurantAvailability();
+
+    const unavailableIds = useMemo(() => {
+        if (!availability.currentMeal) {
+            return new Set<string>();
+        }
+
+        return new Set(
+            cart
+                .filter(
+                    (item) =>
+                        item.variantName.toLowerCase() !==
+                        availability.currentMeal!.toLowerCase()
+                )
+                .map(
+                    (item) =>
+                        `${item.id}-${item.variantId}`
+                )
+        );
+    }, [cart, availability.currentMeal]);
 
     return (
         <div className="sticky top-28 rounded-3xl bg-white p-8 shadow-soft">
@@ -13,26 +37,41 @@ export default function CheckoutSummary() {
             </h2>
 
             <div className="mt-8 space-y-4">
-                {cart.map((item) => (
-                    <div
-                        key={`${item.id}-${item.variantId}`}
-                        className="flex items-center justify-between border-b pb-3"
-                    >
-                        <div>
-                            <p className="font-semibold text-walnut">
-                                {item.name}
-                            </p>
+                {cart.map((item) => {
+                    const unavailable = unavailableIds.has(
+                        `${item.id}-${item.variantId}`
+                    );
 
-                            <p className="text-sm text-walnut-light">
-                                {item.variantName} × {item.quantity}
+                    return (
+                        <div
+                            key={`${item.id}-${item.variantId}`}
+                            className={`flex items-center justify-between border-b pb-3 ${unavailable
+                                ? "opacity-60"
+                                : ""
+                                }`}
+                        >
+                            <div>
+                                <p className="font-semibold text-walnut">
+                                    {item.name}
+                                </p>
+
+                                <p className="text-sm text-walnut-light">
+                                    {item.variantName} × {item.quantity}
+                                </p>
+
+                                {unavailable && (
+                                    <p className="mt-1 text-xs font-semibold text-red-600">
+                                        Unavailable for current meal
+                                    </p>
+                                )}
+                            </div>
+
+                            <p className="font-semibold text-sage-dark">
+                                Rs. {item.price * item.quantity}
                             </p>
                         </div>
-
-                        <p className="font-semibold text-sage-dark">
-                            Rs. {item.price * item.quantity}
-                        </p>
-                    </div>
-                ))}
+                    );
+                })}
             </div>
 
             <div className="mt-8 space-y-3 border-t pt-5">

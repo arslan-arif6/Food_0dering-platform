@@ -37,6 +37,7 @@ export default function DishCard({ dish }: { dish: Dish }) {
       price: selectedVariant.price,
 
       quantity: 1,
+      categories: dish.categories,
     });
 
     setAdded(true);
@@ -96,8 +97,8 @@ export default function DishCard({ dish }: { dish: Dish }) {
               <label
                 key={variant.id}
                 className={`flex cursor-pointer items-center justify-between rounded-xl border px-4 py-3 transition-all ${selectedVariantId === variant.id
-                    ? "border-sage bg-sage/10"
-                    : "border-walnut/10 hover:border-sage/40"
+                  ? "border-sage bg-sage/10"
+                  : "border-walnut/10 hover:border-sage/40"
                   }`}
               >
                 <div className="flex items-center gap-3">
@@ -125,8 +126,8 @@ export default function DishCard({ dish }: { dish: Dish }) {
         <button
           onClick={handleAdd}
           className={`mt-5 flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold transition-all duration-300 ${added
-              ? "bg-sage-dark text-offwhite"
-              : "bg-sage text-offwhite hover:bg-sage-dark"
+            ? "bg-sage-dark text-offwhite"
+            : "bg-sage text-offwhite hover:bg-sage-dark"
             }`}
         >
           {added ? (
