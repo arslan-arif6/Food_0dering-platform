@@ -1,0 +1,72 @@
+"use client";
+
+import Link from "next/link";
+import { useCart } from "@/components/cart/CartProvider";
+
+export default function CheckoutSummary() {
+    const { cart, totalPrice } = useCart();
+
+    return (
+        <div className="sticky top-28 rounded-3xl bg-white p-8 shadow-soft">
+            <h2 className="font-display text-3xl font-semibold text-walnut">
+                Order Summary
+            </h2>
+
+            <div className="mt-8 space-y-4">
+                {cart.map((item) => (
+                    <div
+                        key={`${item.id}-${item.variantId}`}
+                        className="flex items-center justify-between border-b pb-3"
+                    >
+                        <div>
+                            <p className="font-semibold text-walnut">
+                                {item.name}
+                            </p>
+
+                            <p className="text-sm text-walnut-light">
+                                {item.variantName} × {item.quantity}
+                            </p>
+                        </div>
+
+                        <p className="font-semibold text-sage-dark">
+                            Rs. {item.price * item.quantity}
+                        </p>
+                    </div>
+                ))}
+            </div>
+
+            <div className="mt-8 space-y-3 border-t pt-5">
+                <div className="flex justify-between">
+                    <span>Subtotal</span>
+                    <span>Rs. {totalPrice}</span>
+                </div>
+
+                <div className="flex justify-between">
+                    <span>Delivery</span>
+                    <span className="font-semibold text-green-600">
+                        FREE
+                    </span>
+                </div>
+
+                <div className="flex justify-between border-t pt-4 text-xl font-bold">
+                    <span>Total</span>
+                    <span className="text-sage-dark">
+                        Rs. {totalPrice}
+                    </span>
+                </div>
+            </div>
+
+            <div className="mt-8 rounded-2xl bg-cream p-4 text-center text-sm text-walnut-light">
+                Complete your delivery details on the left, then click
+                <strong> Place Order</strong> to confirm your order.
+            </div>
+
+            <Link
+                href="/cart"
+                className="mt-6 block text-center text-sm text-sage-dark hover:underline"
+            >
+                ← Back to Cart
+            </Link>
+        </div>
+    );
+}

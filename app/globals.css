@@ -1,0 +1,36 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  @apply bg-offwhite text-walnut font-body antialiased;
+}
+
+::selection {
+  @apply bg-sage/30 text-walnut;
+}
+
+*:focus-visible {
+  outline: 2px solid #7a9e7e;
+  outline-offset: 3px;
+  border-radius: 4px;
+}
+
+.stitch-border {
+  border: 2px dashed rgba(74, 63, 53, 0.25);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
