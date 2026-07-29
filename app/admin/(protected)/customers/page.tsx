@@ -1,12 +1,18 @@
-import { Users } from "lucide-react";
-import ComingSoon from "@/components/admin/ComingSoon";
+import { getCustomers } from "@/lib/database/customers";
+import PageHeader from "@/components/admin/PageHeader";
+import CustomerDirectory from "@/components/admin/customers/CustomerDirectory";
 
-export default function AdminCustomersPage() {
+export default async function AdminCustomersPage() {
+    const customers = await getCustomers();
+
     return (
-        <ComingSoon
-            icon={Users}
-            title="Customer Directory"
-            description="Browse registered customers, their saved delivery addresses, and order history."
-        />
+        <div className="flex flex-col gap-6">
+            <PageHeader
+                title="Customers"
+                description="Everyone who has placed an order, grouped by phone number."
+            />
+
+            <CustomerDirectory customers={customers} />
+        </div>
     );
 }
