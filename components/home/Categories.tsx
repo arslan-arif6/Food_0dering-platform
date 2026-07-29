@@ -1,22 +1,26 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getCategories } from "@/lib/database/categories";
-import { getRestaurantAvailability } from "@/lib/restaurant";
+import { getRestaurantAvailability, settingsToScheduleConfig } from "@/lib/restaurant";
+import { getRestaurantSettings } from "@/lib/database/settings";
 
 export default async function Categories() {
-  const categories = await getCategories();
+  const [categories, settings] = await Promise.all([
+    getCategories(),
+    getRestaurantSettings(),
+  ]);
 
-  const availability = getRestaurantAvailability();
+  const availability = getRestaurantAvailability(
+    new Date(),
+    settingsToScheduleConfig(settings)
+  );
 
   const homepageCategories = categories.filter((category) =>
     ["breakfast", "lunch", "dinner"].includes(category.slug)
   );
 
   return (
-    <section
-      id="categories"
-      className="bg-cream/40 px-5 py-20 sm:px-8 lg:py-28"
-    >
+    <section id="categories" className="bg-cream/40 px-5 py-20 sm:px-8 lg:py-28">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-sage-dark">

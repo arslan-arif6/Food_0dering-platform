@@ -3,8 +3,11 @@ import Footer from "@/components/layout/Footer";
 
 import CheckoutForm from "@/components/checkout/CheckoutForm";
 import CheckoutSummary from "@/components/checkout/CheckoutSummary";
+import { getRestaurantSettings } from "@/lib/database/settings";
 
-export default function CheckoutPage() {
+export default async function CheckoutPage() {
+    const settings = await getRestaurantSettings();
+
     return (
         <>
             <Navbar />
@@ -22,9 +25,9 @@ export default function CheckoutPage() {
                     </div>
 
                     <div className="grid gap-10 lg:grid-cols-[1.5fr_0.8fr]">
-                        <CheckoutForm />
+                        <CheckoutForm settings={settings} />
 
-                        <CheckoutSummary />
+                        <CheckoutSummary settings={settings} />
                     </div>
                 </div>
             </main>

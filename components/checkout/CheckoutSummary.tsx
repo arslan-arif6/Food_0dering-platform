@@ -4,30 +4,42 @@ import Link from "next/link";
 import { useMemo } from "react";
 
 import { useCart } from "@/components/cart/CartProvider";
-import { getRestaurantAvailability } from "@/lib/restaurant";
+import { getRestaurantAvailability, settingsToScheduleConfig } from "@/lib/restaurant";
+import type { RestaurantSettings } from "@/lib/database/settings";
 
-export default function CheckoutSummary() {
+type CheckoutSummaryProps = {
+    settings: RestaurantSettings | null;
+};
+
+export default function CheckoutSummary({ settings }: CheckoutSummaryProps) {
     const { cart, totalPrice } = useCart();
 
-    const availability = getRestaurantAvailability();
+    const availability = getRestaurantAvailability(
+        new Date(),
+        settingsToScheduleConfig(settings)
+    );
+
+    const deliveryFee =
+        settings?.free_delivery_threshold != null &&
+            totalPrice >= settings.free_delivery_threshold
+            ? 0
+            : settings?.delivery_fee ?? 0;
+
+    const total = totalPrice + deliveryFee;
 
     const unavailableIds = useMemo(() => {
         if (!availability.currentMeal) {
             return new Set<string>();
         }
 
-        const currentMeal = availability.currentMeal;
-
         return new Set(
             cart
                 .filter(
                     (item) =>
-                        !item.categories.includes(currentMeal)
+                        item.variantName.toLowerCase() !==
+                        availability.currentMeal!.toLowerCase()
                 )
-                .map(
-                    (item) =>
-                        `${item.id}-${item.variantId}`
-                )
+                .map((item) => `${item.id}-${item.variantId}`)
         );
     }, [cart, availability.currentMeal]);
 
@@ -39,22 +51,15 @@ export default function CheckoutSummary() {
 
             <div className="mt-8 space-y-4">
                 {cart.map((item) => {
-                    const unavailable = unavailableIds.has(
-                        `${item.id}-${item.variantId}`
-                    );
+                    const unavailable = unavailableIds.has(`${item.id}-${item.variantId}`);
 
                     return (
                         <div
                             key={`${item.id}-${item.variantId}`}
-                            className={`flex items-center justify-between border-b pb-3 ${unavailable
-                                ? "opacity-60"
-                                : ""
-                                }`}
+                            className={`flex items-center justify-between border-b pb-3 ${unavailable ? "opacity-60" : ""}`}
                         >
                             <div>
-                                <p className="font-semibold text-walnut">
-                                    {item.name}
-                                </p>
+                                <p className="font-semibold text-walnut">{item.name}</p>
 
                                 <p className="text-sm text-walnut-light">
                                     {item.variantName} × {item.quantity}
@@ -83,16 +88,16 @@ export default function CheckoutSummary() {
 
                 <div className="flex justify-between">
                     <span>Delivery</span>
-                    <span className="font-semibold text-green-600">
-                        FREE
-                    </span>
+                    {deliveryFee === 0 ? (
+                        <span className="font-semibold text-green-600">FREE</span>
+                    ) : (
+                        <span className="font-semibold text-walnut">Rs. {deliveryFee}</span>
+                    )}
                 </div>
 
                 <div className="flex justify-between border-t pt-4 text-xl font-bold">
                     <span>Total</span>
-                    <span className="text-sage-dark">
-                        Rs. {totalPrice}
-                    </span>
+                    <span className="text-sage-dark">Rs. {total}</span>
                 </div>
             </div>
 

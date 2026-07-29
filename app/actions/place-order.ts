@@ -3,15 +3,15 @@
 import { z } from "zod";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type {
-    OrderStatus,
-    PaymentMethod,
-} from "@/lib/database/orders";
+import type { OrderStatus, PaymentMethod } from "@/lib/database/orders";
 
 import {
     getRestaurantAvailability,
     canOrderDish,
+    settingsToScheduleConfig,
 } from "@/lib/restaurant";
+
+import { getRestaurantSettings } from "@/lib/database/settings";
 
 const placeOrderSchema = z.object({
     customerName: z.string().min(2),
@@ -20,11 +20,7 @@ const placeOrderSchema = z.object({
 
     notes: z.string().optional().default(""),
 
-    paymentMethod: z.enum([
-        "cash_on_delivery",
-        "jazzcash",
-        "easypaisa",
-    ]),
+    paymentMethod: z.enum(["cash_on_delivery", "jazzcash", "easypaisa"]),
 
     subtotal: z.number().nonnegative(),
     deliveryFee: z.number().nonnegative(),
@@ -46,13 +42,33 @@ const placeOrderSchema = z.object({
 
 export type PlaceOrderInput = z.infer<typeof placeOrderSchema>;
 
+const PAYMENT_METHOD_FLAG: Record<
+    PaymentMethod,
+    "payment_cod" | "payment_jazzcash" | "payment_easypaisa"
+> = {
+    cash_on_delivery: "payment_cod",
+    jazzcash: "payment_jazzcash",
+    easypaisa: "payment_easypaisa",
+};
+
 export async function placeOrder(input: PlaceOrderInput) {
     const data = placeOrderSchema.parse(input);
 
-    const availability = getRestaurantAvailability();
+    const settings = await getRestaurantSettings();
+    const scheduleConfig = settingsToScheduleConfig(settings);
+    const availability = getRestaurantAvailability(new Date(), scheduleConfig);
 
     if (!availability.isOpen) {
         throw new Error(availability.message);
+    }
+
+    if (settings) {
+        const flag = PAYMENT_METHOD_FLAG[data.paymentMethod];
+        if (!settings[flag]) {
+            throw new Error(
+                "This payment method is currently unavailable. Please choose another."
+            );
+        }
     }
 
     const supabase = await createSupabaseServerClient();
@@ -89,7 +105,7 @@ export async function placeOrder(input: PlaceOrderInput) {
         const categories = dish.dish_categories.map(
             (entry: any) => entry.categories.slug
         );
-        if (!canOrderDish(categories)) {
+        if (!canOrderDish(categories, scheduleConfig)) {
             throw new Error(
                 `${item.dishName} is not available during ${availability.currentMeal ?? "this"} time. Please order available dishes only.`
             );
@@ -97,7 +113,6 @@ export async function placeOrder(input: PlaceOrderInput) {
     }
 
     const status: OrderStatus = "new";
-
     const paymentMethod: PaymentMethod = data.paymentMethod;
 
     const { data: order, error: orderError } = await supabase
@@ -124,9 +139,7 @@ export async function placeOrder(input: PlaceOrderInput) {
         console.error(orderError);
         console.error("===============================");
 
-        throw new Error(
-            JSON.stringify(orderError ?? "Unable to create order.")
-        );
+        throw new Error(JSON.stringify(orderError ?? "Unable to create order."));
     }
 
     const orderItems = data.items.map((item) => ({
@@ -150,10 +163,7 @@ export async function placeOrder(input: PlaceOrderInput) {
     if (itemsError) {
         console.error(itemsError);
 
-        await supabase
-            .from("orders")
-            .delete()
-            .eq("id", order.id);
+        await supabase.from("orders").delete().eq("id", order.id);
 
         throw new Error("Unable to save order items.");
     }

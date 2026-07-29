@@ -4,26 +4,26 @@ import {
   getDishesByCategory,
 } from "@/lib/database/dishes";
 
-import { getRestaurantAvailability } from "@/lib/restaurant";
+import { getRestaurantAvailability, settingsToScheduleConfig } from "@/lib/restaurant";
+import { getRestaurantSettings } from "@/lib/database/settings";
 
 type FeaturedDishesProps = {
   category?: string;
 };
 
-export default async function FeaturedDishes({
-  category,
-}: FeaturedDishesProps) {
-  const availability = getRestaurantAvailability();
+export default async function FeaturedDishes({ category }: FeaturedDishesProps) {
+  const settings = await getRestaurantSettings();
+  const availability = getRestaurantAvailability(
+    new Date(),
+    settingsToScheduleConfig(settings)
+  );
 
   const dishes = category
     ? await getDishesByCategory(category)
     : await getPublicDishes();
 
   return (
-    <section
-      id="featured-dishes"
-      className="px-5 py-20 sm:px-8 lg:py-28"
-    >
+    <section id="featured-dishes" className="px-5 py-20 sm:px-8 lg:py-28">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-sage-dark">
@@ -34,9 +34,7 @@ export default async function FeaturedDishes({
             Straight from our kitchen to yours
           </h2>
 
-          <p className="mt-4 text-walnut-light">
-            {availability.message}
-          </p>
+          <p className="mt-4 text-walnut-light">{availability.message}</p>
         </div>
 
         {dishes.length === 0 ? (
@@ -47,17 +45,12 @@ export default async function FeaturedDishes({
                 : "Kitchen is currently closed"}
             </h3>
 
-            <p className="mt-4 text-walnut-light">
-              {availability.message}
-            </p>
+            <p className="mt-4 text-walnut-light">{availability.message}</p>
           </div>
         ) : (
           <div className="mt-14 grid gap-8 sm:grid-cols-2 lg:grid-cols-3">
             {dishes.map((dish) => (
-              <DishCard
-                key={dish.id}
-                dish={dish}
-              />
+              <DishCard key={dish.id} dish={dish} />
             ))}
           </div>
         )}

@@ -3,20 +3,21 @@ import Footer from "@/components/layout/Footer";
 import Categories from "@/components/home/Categories";
 import FeaturedDishes from "@/components/home/FeaturedDishes";
 
-import { getRestaurantAvailability } from "@/lib/restaurant";
+import { getRestaurantAvailability, settingsToScheduleConfig } from "@/lib/restaurant";
+import { getRestaurantSettings } from "@/lib/database/settings";
 
 type MenuPageProps = {
-    searchParams: Promise<{
-        category?: string;
-    }>;
+    searchParams: Promise<{ category?: string }>;
 };
 
-export default async function MenuPage({
-    searchParams,
-}: MenuPageProps) {
+export default async function MenuPage({ searchParams }: MenuPageProps) {
     const { category } = await searchParams;
 
-    const availability = getRestaurantAvailability();
+    const settings = await getRestaurantSettings();
+    const availability = getRestaurantAvailability(
+        new Date(),
+        settingsToScheduleConfig(settings)
+    );
 
     return (
         <main className="min-h-screen bg-offwhite">
