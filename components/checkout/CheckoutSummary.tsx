@@ -16,12 +16,13 @@ export default function CheckoutSummary() {
             return new Set<string>();
         }
 
+        const currentMeal = availability.currentMeal;
+
         return new Set(
             cart
                 .filter(
                     (item) =>
-                        item.variantName.toLowerCase() !==
-                        availability.currentMeal!.toLowerCase()
+                        !item.categories.includes(currentMeal)
                 )
                 .map(
                     (item) =>
