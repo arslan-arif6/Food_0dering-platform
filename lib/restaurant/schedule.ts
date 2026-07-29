@@ -13,11 +13,11 @@ export const RESTAURANT_SCHEDULE: MealSchedule[] = [
     {
         meal: "lunch",
         opensAt: "06:30",
-        closesAt: "15:30",
+        closesAt: "07:00",
     },
     {
         meal: "dinner",
-        opensAt: "18:00",
+        opensAt: "07:30",
         closesAt: "22:00",
     },
 ];
