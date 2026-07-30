@@ -68,7 +68,15 @@ export default function DishCard({ dish }: { dish: Dish }) {
             {dish.tag}
           </span>
         )}
+        {dish.soldOut && (
+          <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+            <span className="rounded-full bg-offwhite px-4 py-2 text-sm font-semibold text-walnut">
+              Sold Out
+            </span>
+          </div>
+        )}
       </div>
+
 
       <div className="px-2 pb-2 pt-4">
         <div className="flex items-start justify-between gap-3">
@@ -125,12 +133,17 @@ export default function DishCard({ dish }: { dish: Dish }) {
 
         <button
           onClick={handleAdd}
-          className={`mt-5 flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold transition-all duration-300 ${added
-            ? "bg-sage-dark text-offwhite"
-            : "bg-sage text-offwhite hover:bg-sage-dark"
+          disabled={dish.soldOut}
+          className={`mt-5 flex w-full items-center justify-center gap-2 rounded-full px-5 py-3 font-semibold transition-all duration-300 ${dish.soldOut
+            ? "cursor-not-allowed bg-walnut/15 text-walnut-light"
+            : added
+              ? "bg-sage-dark text-offwhite"
+              : "bg-sage text-offwhite hover:bg-sage-dark"
             }`}
         >
-          {added ? (
+          {dish.soldOut ? (
+            "Sold Out"
+          ) : added ? (
             <>
               <Check className="h-4 w-4" />
               Added to Cart

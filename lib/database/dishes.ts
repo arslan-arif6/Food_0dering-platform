@@ -22,6 +22,7 @@ export type DatabaseDish = {
     image: string;
     featured: boolean;
     available: boolean;
+    soldOut: boolean;
     tag?: string;
     categories: string[];
     variants: DatabaseDishVariant[];
@@ -124,6 +125,7 @@ export async function createDish(
             image: values.imageUrl,
             featured: values.featured,
             available: values.available,
+            sold_out: values.soldOut,
         })
         .select("id")
         .single();
@@ -179,6 +181,7 @@ export type DishEditRecord = {
     image: string;
     featured: boolean;
     available: boolean;
+    soldOut: boolean;
     categoryIds: string[];
     variants: DatabaseDishVariant[];
 };
@@ -218,6 +221,7 @@ export async function getDishForEdit(
         image: row.image ?? "",
         featured: row.featured ?? false,
         available: row.available,
+        soldOut: row.sold_out ?? false,
         categoryIds: (row.dish_categories ?? []).map((entry) => entry.category_id),
         variants: (row.dish_variants ?? []).map((variant) => ({
             id: variant.id,

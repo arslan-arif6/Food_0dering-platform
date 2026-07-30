@@ -28,6 +28,8 @@ export type Dish = {
 
   available: boolean;
 
+  soldOut?: boolean;
+
   tag?: string;
 };
 

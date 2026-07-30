@@ -79,6 +79,7 @@ export async function placeOrder(input: PlaceOrderInput) {
             .from("dishes")
             .select(`
             id,
+            sold_out,
             dish_categories (
                 categories (
                     slug
@@ -99,6 +100,12 @@ export async function placeOrder(input: PlaceOrderInput) {
         if (!dish) {
             throw new Error(
                 `${item.dishName} is not available now. Please order from the current meal menu.`
+            );
+        }
+
+        if (dish.sold_out) {
+            throw new Error(
+                `${item.dishName} is sold out right now. Please remove it from your cart.`
             );
         }
 

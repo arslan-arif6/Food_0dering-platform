@@ -8,7 +8,7 @@ import type { DatabaseDish } from "@/lib/database/dishes";
 import StatusBadge from "@/components/admin/menu/StatusBadge";
 import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { deleteDishAction } from "@/app/admin/(protected)/menu/actions";
-
+import { toast } from "sonner";
 type DishManagementCardProps = {
     dish: DatabaseDish;
     categoryLookup: Record<string, string>;
@@ -26,7 +26,7 @@ export default function DishManagementCard({
             const result = await deleteDishAction(dish.id, dish.image);
 
             if (!result.success) {
-                alert(result.error ?? "Failed to delete dish.");
+                toast.error(result.error ?? "Failed to delete dish.");
                 return;
             }
 
@@ -56,6 +56,12 @@ export default function DishManagementCard({
                             activeLabel="Available"
                             inactiveLabel="Unavailable"
                         />
+
+                        {dish.soldOut && (
+                            <span className="rounded-full bg-red-100 px-3 py-1 text-xs font-semibold text-red-700">
+                                Sold Out
+                            </span>
+                        )}
 
                         <StatusBadge
                             active={dish.featured}

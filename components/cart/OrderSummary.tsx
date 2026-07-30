@@ -6,11 +6,13 @@ import { ArrowRight, ShoppingBag, UtensilsCrossed } from "lucide-react";
 type Props = {
     subtotal: number;
     deliveryFee: number;
+    estimatedDeliveryTime?: string;
 };
 
 export default function OrderSummary({
     subtotal,
     deliveryFee,
+    estimatedDeliveryTime = "30-45 mins",
 }: Props) {
     const total = subtotal + deliveryFee;
     const isCartEmpty = subtotal <= 0;
@@ -52,10 +54,10 @@ export default function OrderSummary({
             </div>
 
             <div className="mt-8 rounded-2xl bg-cream p-4 text-sm text-walnut-light">
-                <p>✅ Free Delivery</p>
+                {deliveryFee === 0 && <p>✅ Free Delivery</p>}
 
                 <p className="mt-2">
-                    🚚 Estimated delivery: <strong>30–45 minutes</strong>
+                    🚚 Estimated delivery: <strong>{estimatedDeliveryTime}</strong>
                 </p>
 
                 <p className="mt-2">

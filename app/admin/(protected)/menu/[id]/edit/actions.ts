@@ -59,6 +59,7 @@ export async function updateDishAction(
             categoryIds: parsed.data.categoryIds,
             variants: parsed.data.variants,
             available: parsed.data.available,
+            soldOut: parsed.data.soldOut,
             featured: parsed.data.featured,
             imageUrl,
         });

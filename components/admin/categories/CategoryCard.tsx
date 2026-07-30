@@ -8,7 +8,7 @@ import { useState, useTransition } from "react";
 
 import type { DatabaseCategory } from "@/lib/database/categories";
 import { deleteCategoryAction } from "@/app/admin/(protected)/categories/actions";
-
+import { toast } from "sonner";
 type Props = {
     category: DatabaseCategory;
 };
@@ -22,7 +22,7 @@ export default function CategoryCard({ category }: Props) {
             const result = await deleteCategoryAction(category.id);
 
             if (!result.success) {
-                alert(result.formError);
+                toast.error(result.formError ?? "Failed to delete category.");
                 return;
             }
 

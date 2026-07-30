@@ -72,7 +72,10 @@ function checkImage(file: unknown, ctx: z.RefinementCtx) {
 // Edit-mode image check: undefined means "keep the existing image" and
 // is not an error. Anything else goes through the same checks as create.
 function checkOptionalImage(file: unknown, ctx: z.RefinementCtx) {
-    if (file === undefined) {
+    // Treat any "nothing selected" representation as keep-existing-image,
+    // not just a strict `undefined` — this is what was blocking Edit Dish
+    // saves whenever no new file was picked.
+    if (file === undefined || file === null || file === "") {
         return;
     }
     checkImage(file, ctx);
@@ -137,6 +140,7 @@ const dishFieldsSchema = z.object({
         .min(1, "Add at least one variant")
         .max(MAX_VARIANTS, "Maximum of 4 variants allowed."),
     available: z.boolean(),
+    soldOut: z.boolean(),
     featured: z.boolean(),
     image: z.custom<File>().superRefine(checkImage),
 });

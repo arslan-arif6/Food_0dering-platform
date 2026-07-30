@@ -30,6 +30,7 @@ export function mapDish(databaseDish: any): DatabaseDish {
         image: databaseDish.image,
         featured: databaseDish.featured,
         available: databaseDish.available,
+        soldOut: databaseDish.sold_out ?? false,
         tag: databaseDish.tag ?? undefined,
         categories,
         variants,

@@ -42,6 +42,7 @@ export type Database = {
                     image: string | null;
                     featured: boolean | null;
                     available: boolean;
+                    sold_out: boolean;
                     created_at: string;
                     updated_at: string;
                 };
@@ -53,6 +54,7 @@ export type Database = {
                     image?: string | null;
                     featured?: boolean | null;
                     available?: boolean;
+                    sold_out?: boolean;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -64,6 +66,7 @@ export type Database = {
                     image?: string | null;
                     featured?: boolean | null;
                     available?: boolean;
+                    sold_out?: boolean;
                     created_at?: string;
                     updated_at?: string;
                 };

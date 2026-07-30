@@ -32,13 +32,11 @@ export default function CheckoutSummary({ settings }: CheckoutSummaryProps) {
             return new Set<string>();
         }
 
+        const currentMeal = availability.currentMeal;
+
         return new Set(
             cart
-                .filter(
-                    (item) =>
-                        item.variantName.toLowerCase() !==
-                        availability.currentMeal!.toLowerCase()
-                )
+                .filter((item) => !item.categories.includes(currentMeal))
                 .map((item) => `${item.id}-${item.variantId}`)
         );
     }, [cart, availability.currentMeal]);
