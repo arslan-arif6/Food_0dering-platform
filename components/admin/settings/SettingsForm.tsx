@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2 } from "lucide-react";
+import { Loader2, ShieldCheck } from "lucide-react";
 import { toast } from "sonner";
 
 import TextField from "@/components/admin/fields/TextField";
@@ -12,8 +12,10 @@ import TextAreaField from "@/components/admin/fields/TextAreaField";
 import SwitchField from "@/components/admin/fields/SwitchField";
 import FormSection from "@/components/admin/FormSection";
 import LogoDropzone from "@/components/admin/settings/LogoDropzone";
+import AdminManagementSection from "@/components/admin/settings/AdminManagementSection";
+import MfaPanel from "@/components/admin/account/MfaPanel";
+import PasswordSecuritySection from "@/components/admin/account/PasswordSecuritySection";
 import { updateSettingsAction } from "@/app/admin/(protected)/settings/actions";
-import { supabase } from "@/lib/supabase/client";
 import {
     settingsFormSchema,
     type SettingsFormInput,
@@ -99,7 +101,6 @@ export default function SettingsForm({ settings, adminEmail }: Props) {
     const router = useRouter();
     const [activeTab, setActiveTab] = useState<TabId>("restaurant");
     const [submitting, setSubmitting] = useState(false);
-    const [resettingPassword, setResettingPassword] = useState(false);
 
     const resolver = zodResolver(settingsFormSchema) as unknown as Resolver<
         SettingsFormInput,
@@ -162,19 +163,6 @@ export default function SettingsForm({ settings, adminEmail }: Props) {
         toast.success("Settings saved");
         reset(rawValues, { keepDirty: false });
         router.refresh();
-    }
-
-    async function handlePasswordReset() {
-        setResettingPassword(true);
-        const { error } = await supabase.auth.resetPasswordForEmail(adminEmail);
-        setResettingPassword(false);
-
-        if (error) {
-            toast.error("Couldn't send reset email. Please try again.");
-            return;
-        }
-
-        toast.success("Password reset email sent");
     }
 
     return (
@@ -401,18 +389,37 @@ export default function SettingsForm({ settings, adminEmail }: Props) {
                     </div>
 
                     <div className={activeTab === "account" ? "flex flex-col gap-6" : "hidden"}>
-                        <FormSection title="Account">
-                            <TextField id="adminEmail" label="Admin Email" value={adminEmail} disabled readOnly />
-                            <button
-                                type="button"
-                                onClick={handlePasswordReset}
-                                disabled={resettingPassword}
-                                className="flex w-fit items-center gap-2 rounded-full bg-cream px-5 py-2.5 text-sm font-semibold text-walnut transition hover:opacity-80 disabled:opacity-60"
-                            >
-                                {resettingPassword && <Loader2 className="h-4 w-4 animate-spin" />}
-                                Send Password Reset Email
-                            </button>
+                        <FormSection
+                            title="My Account"
+                            description="This is the account currently signed in to the admin panel."
+                        >
+                            <div className="flex flex-wrap items-center justify-between gap-4 rounded-2xl bg-cream px-4 py-4">
+                                <div>
+                                    <p className="text-sm font-semibold text-walnut">
+                                        {adminEmail}
+                                    </p>
+                                    <p className="mt-1 text-xs text-walnut-light">
+                                        Active admin account
+                                    </p>
+                                </div>
+
+                                <span className="inline-flex items-center gap-1.5 rounded-full bg-sage/15 px-3 py-1 text-xs font-semibold text-sage-dark">
+                                    <ShieldCheck className="h-3.5 w-3.5" />
+                                    Protected
+                                </span>
+                            </div>
                         </FormSection>
+
+                        <PasswordSecuritySection adminEmail={adminEmail} />
+
+                        <FormSection
+                            title="2-Step Verification"
+                            description="Required for all admin accounts before opening the dashboard."
+                        >
+                            <MfaPanel mode="settings" />
+                        </FormSection>
+
+                        <AdminManagementSection currentAdminEmail={adminEmail} />
                     </div>
                 </div>
             </div>

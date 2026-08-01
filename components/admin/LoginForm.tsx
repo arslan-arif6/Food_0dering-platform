@@ -18,18 +18,10 @@ export default function LoginForm() {
         setLoading(true);
         setError("");
 
-        console.log("Attempting login...");
-
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { error } = await supabase.auth.signInWithPassword({
             email,
             password,
         });
-        const session = await supabase.auth.getSession();
-        console.log("SESSION:", session.data.session);
-
-        console.log("DOCUMENT COOKIE:", document.cookie);
-
-        console.log("LOGIN RESULT:", { data, error });
 
         setLoading(false);
 
@@ -37,8 +29,6 @@ export default function LoginForm() {
             setError(error.message);
             return;
         }
-
-        console.log("Login successful. Redirecting...");
 
         router.push("/admin");
         router.refresh();

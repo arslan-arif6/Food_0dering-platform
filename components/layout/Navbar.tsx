@@ -4,35 +4,28 @@ import Link from "next/link";
 import { useEffect, useState } from "react";
 import { Menu, X, ShoppingBag } from "lucide-react";
 import { useCart } from "@/components/cart/CartProvider";
+import { restaurantInfo } from "@/lib/data";
 
 const navLinks = [
-  {
-    href: "/",
-    label: "Home",
-  },
-  {
-    href: "/menu",
-    label: "Menu",
-  },
-  {
-    href: "/track-order",
-    label: "Track Order",
-  },
-  {
-    href: "/#about",
-    label: "About",
-  },
-  {
-    href: "/#contact",
-    label: "Contact",
-  },
+  { href: "/", label: "Home" },
+  { href: "/menu", label: "Menu" },
+  { href: "/track-order", label: "Track Order" },
+  { href: "/#about", label: "About" },
+  { href: "/#contact", label: "Contact" },
 ];
 
-export default function Navbar() {
+type NavbarProps = {
+  name?: string | null;
+  logoUrl?: string | null;
+};
+
+export default function Navbar({ name, logoUrl }: NavbarProps) {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
 
   const { itemCount } = useCart();
+
+  const displayName = name || restaurantInfo.name;
 
   useEffect(() => {
     const onScroll = () => {
@@ -63,12 +56,21 @@ export default function Navbar() {
     >
       <nav className="mx-auto flex max-w-7xl items-center justify-between px-5 py-4 sm:px-8">
         <Link href="/" className="flex items-center gap-2.5">
-          <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sage font-display text-lg font-semibold text-offwhite shadow-soft">
-            H
+          <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sage font-display text-lg font-semibold text-offwhite shadow-soft">
+            {logoUrl ? (
+              // eslint-disable-next-line @next/next/no-img-element
+              <img
+                src={logoUrl}
+                alt={displayName}
+                className="h-full w-full object-cover"
+              />
+            ) : (
+              displayName.charAt(0).toUpperCase()
+            )}
           </span>
 
           <span className="font-display text-xl font-semibold tracking-tight text-walnut">
-            Home Made Food
+            {displayName}
           </span>
         </Link>
 

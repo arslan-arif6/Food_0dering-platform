@@ -1,5 +1,6 @@
 import Link from "next/link";
-import { FaFacebookF, FaInstagram, FaTiktok } from "react-icons/fa";
+import { FaFacebookF, FaInstagram } from "react-icons/fa";
+import { MapPin } from "lucide-react";
 import { restaurantInfo } from "@/lib/data";
 
 const quickLinks = [
@@ -10,8 +11,25 @@ const quickLinks = [
   { href: "/contact", label: "Contact" },
 ];
 
-export default function Footer() {
+type FooterProps = {
+  name?: string | null;
+  description?: string | null;
+  facebookUrl?: string | null;
+  instagramUrl?: string | null;
+  googleMapsUrl?: string | null;
+};
+
+export default function Footer({
+  name,
+  description,
+  facebookUrl,
+  instagramUrl,
+  googleMapsUrl,
+}: FooterProps) {
   const info = restaurantInfo;
+  const displayName = name || info.name;
+  const displayDescription = description || info.description;
+
   return (
     <footer className="bg-walnut px-5 pb-8 pt-16 sm:px-8">
       <div className="mx-auto max-w-7xl">
@@ -19,14 +37,14 @@ export default function Footer() {
           <div>
             <div className="flex items-center gap-2.5">
               <span className="flex h-10 w-10 items-center justify-center rounded-full bg-sage font-display text-lg font-semibold text-offwhite">
-                H
+                {displayName.charAt(0).toUpperCase()}
               </span>
               <span className="font-display text-xl font-semibold text-offwhite">
-                {info.name}
+                {displayName}
               </span>
             </div>
             <p className="mt-4 max-w-xs text-sm leading-relaxed text-offwhite/60">
-              {info.description}
+              {displayDescription}
             </p>
           </div>
 
@@ -54,32 +72,42 @@ export default function Footer() {
             </h3>
             <div className="mt-4 flex gap-3">
               <a
-                href={info.social.facebook}
+                href={facebookUrl || info.social.facebook}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Facebook"
                 className="flex h-11 w-11 items-center justify-center rounded-full bg-offwhite/10 text-offwhite transition-colors hover:bg-sage"
               >
                 <FaFacebookF className="h-5 w-5" />
               </a>
+
               <a
-                href={info.social.instagram}
+                href={instagramUrl || info.social.instagram}
+                target="_blank"
+                rel="noopener noreferrer"
                 aria-label="Instagram"
                 className="flex h-11 w-11 items-center justify-center rounded-full bg-offwhite/10 text-offwhite transition-colors hover:bg-sage"
               >
                 <FaInstagram className="h-5 w-5" />
               </a>
-              <a
-                href={info.social.tiktok}
-                aria-label="tiktok"
-                className="flex h-11 w-11 items-center justify-center rounded-full bg-offwhite/10 text-offwhite transition-colors hover:bg-sage"
-              >
-                <FaTiktok className="h-5 w-5" />
-              </a>
+
+              {googleMapsUrl ? (
+                <a
+                  href={googleMapsUrl}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  aria-label="Google Maps"
+                  className="flex h-11 w-11 items-center justify-center rounded-full bg-offwhite/10 text-offwhite transition-colors hover:bg-sage"
+                >
+                  <MapPin className="h-5 w-5" />
+                </a>
+              ) : null}
             </div>
           </div>
         </div>
 
         <div className="mt-12 border-t border-offwhite/10 pt-6 text-center text-sm text-offwhite/50">
-          © {new Date().getFullYear()} {info.name}. All rights reserved.
+          © {new Date().getFullYear()} {displayName}. All rights reserved.
         </div>
       </div>
     </footer>

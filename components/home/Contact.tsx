@@ -1,8 +1,21 @@
 import { Phone, Mail, MapPin, MessageCircle } from "lucide-react";
 import { restaurantInfo } from "@/lib/data";
 
-export default function Contact() {
+type ContactProps = {
+  name?: string | null;
+  phone?: string | null;
+  whatsapp?: string | null;
+  email?: string | null;
+  address?: string | null;
+};
+
+export default function Contact({ name, phone, whatsapp, email, address }: ContactProps) {
   const info = restaurantInfo;
+  const displayName = name || info.name;
+  const displayPhone = phone || info.phone;
+  const displayWhatsapp = whatsapp || info.whatsapp;
+  const displayEmail = email || info.email;
+  const displayAddress = address || `${info.address}, ${info.city}`;
 
   return (
     <section
@@ -30,7 +43,7 @@ export default function Contact() {
               Call Us
             </h3>
 
-            <p className="mt-1 text-walnut-light">{info.phone}</p>
+            <p className="mt-1 text-walnut-light">{displayPhone}</p>
           </div>
 
           <div className="rounded-3xl bg-offwhite p-8 text-center shadow-soft">
@@ -42,7 +55,7 @@ export default function Contact() {
               Email Us
             </h3>
 
-            <p className="mt-1 text-walnut-light">{info.email}</p>
+            <p className="mt-1 text-walnut-light">{displayEmail}</p>
           </div>
 
           <div className="rounded-3xl bg-offwhite p-8 text-center shadow-soft">
@@ -54,17 +67,13 @@ export default function Contact() {
               Visit Us
             </h3>
 
-            <p className="mt-1 text-walnut-light">
-              {info.address}, {info.city}, Punjab
-            </p>
+            <p className="mt-1 text-walnut-light">{displayAddress}</p>
           </div>
         </div>
 
         <div className="mt-10 flex justify-center">
           <a
-            href={`https://wa.me/${info.whatsapp}?text=Hi%20${encodeURIComponent(
-              info.name
-            )}%2C%20I'd%20like%20to%20place%20an%20order`}
+            href={`https://wa.me/${displayWhatsapp}?text=Hi%20${encodeURIComponent(displayName)}%2C%20I'd%20like%20to%20place%20an%20order`}
             target="_blank"
             rel="noopener noreferrer"
             className="inline-flex items-center gap-2.5 rounded-full bg-[#25D366] px-8 py-3.5 font-semibold text-offwhite shadow-soft-lg transition-transform hover:-translate-y-0.5"

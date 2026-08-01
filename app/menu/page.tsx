@@ -21,7 +21,7 @@ export default async function MenuPage({ searchParams }: MenuPageProps) {
 
     return (
         <main className="min-h-screen bg-offwhite">
-            <Navbar />
+            <Navbar name={settings?.restaurant_name} logoUrl={settings?.logo_url} />
 
             <section className="bg-gradient-to-b from-cream via-offwhite to-offwhite py-20">
                 <div className="mx-auto max-w-7xl px-5 text-center">
@@ -45,7 +45,13 @@ export default async function MenuPage({ searchParams }: MenuPageProps) {
 
             <FeaturedDishes category={category} />
 
-            <Footer />
+            <Footer
+                name={settings?.restaurant_name}
+                description={settings?.description}
+                facebookUrl={settings?.facebook_url}
+                instagramUrl={settings?.instagram_url}
+                googleMapsUrl={settings?.google_maps_url}
+            />
         </main>
     );
 }

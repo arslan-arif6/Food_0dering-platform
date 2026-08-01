@@ -4,8 +4,6 @@ import { createServerClient } from "@supabase/ssr";
 export async function getUser() {
     const cookieStore = await cookies();
 
-    console.log("SERVER COOKIES:", cookieStore.getAll());
-
     const supabase = createServerClient(
         process.env.NEXT_PUBLIC_SUPABASE_URL!,
         process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -28,8 +26,9 @@ export async function getUser() {
         error,
     } = await supabase.auth.getUser();
 
-    console.log("SERVER USER:", user);
-    console.log("SERVER ERROR:", error);
+    if (error) {
+        console.error(error);
+    }
 
     return user;
 }

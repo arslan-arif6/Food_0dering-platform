@@ -2,8 +2,16 @@ import Image from "next/image";
 import Link from "next/link";
 import { restaurantInfo } from "@/lib/data";
 
-export default function Hero() {
+type HeroProps = {
+  name?: string | null;
+  description?: string | null;
+};
+
+export default function Hero({ name, description }: HeroProps) {
   const info = restaurantInfo;
+  const displayName = name || info.name;
+  const displayDescription = description || info.description;
+
   return (
     <section className="relative overflow-hidden bg-gradient-to-b from-cream via-offwhite to-offwhite px-5 pb-20 pt-14 sm:px-8 lg:pb-28 lg:pt-20">
       <div className="pointer-events-none absolute -left-24 top-10 h-72 w-72 rounded-full bg-sage/20 blur-3xl" />
@@ -20,7 +28,7 @@ export default function Hero() {
           </h1>
 
           <p className="mt-6 text-lg leading-relaxed text-walnut-light">
-            {info.description}
+            {displayDescription}
           </p>
 
           <div className="mt-9 flex flex-wrap items-center gap-4">
@@ -61,7 +69,7 @@ export default function Hero() {
             <div className="overflow-hidden rounded-[2.5rem] border-8 border-offwhite shadow-soft-lg">
               <Image
                 src="https://images.unsplash.com/photo-1547592166-23ac45744acd?auto=format&fit=crop&w=800&q=80"
-                alt={`${info.name} signature homemade meal`}
+                alt={`${displayName} signature homemade meal`}
                 width={520}
                 height={620}
                 className="h-[420px] w-[340px] object-cover sm:h-[520px] sm:w-[420px]"

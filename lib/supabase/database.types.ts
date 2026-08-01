@@ -206,6 +206,38 @@ export type Database = {
                 };
             };
 
+            admins: {
+                Row: {
+                    id: string;
+                    user_id: string;
+                    email: string;
+                    full_name: string | null;
+                    role: "owner" | "admin" | string;
+                    is_active: boolean;
+                    created_at: string;
+                };
+
+                Insert: {
+                    id?: string;
+                    user_id: string;
+                    email: string;
+                    full_name?: string | null;
+                    role?: "owner" | "admin" | string;
+                    is_active?: boolean;
+                    created_at?: string;
+                };
+
+                Update: {
+                    id?: string;
+                    user_id?: string;
+                    email?: string;
+                    full_name?: string | null;
+                    role?: "owner" | "admin" | string;
+                    is_active?: boolean;
+                    created_at?: string;
+                };
+            };
+
             restaurant_settings: {
                 Row: {
                     id: number;

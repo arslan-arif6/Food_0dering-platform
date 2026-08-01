@@ -10,7 +10,7 @@ export default async function CheckoutPage() {
 
     return (
         <>
-            <Navbar />
+            <Navbar name={settings?.restaurant_name} logoUrl={settings?.logo_url} />
 
             <main className="bg-cream py-16">
                 <div className="mx-auto max-w-7xl px-6">
@@ -25,14 +25,22 @@ export default async function CheckoutPage() {
                     </div>
 
                     <div className="grid gap-10 lg:grid-cols-[1.5fr_0.8fr]">
+                        {/* Yahan settings pass karein */}
                         <CheckoutForm settings={settings} />
 
+                        {/* Yahan bhi settings pass karein */}
                         <CheckoutSummary settings={settings} />
                     </div>
                 </div>
             </main>
 
-            <Footer />
+            <Footer
+                name={settings?.restaurant_name}
+                description={settings?.description}
+                facebookUrl={settings?.facebook_url}
+                instagramUrl={settings?.instagram_url}
+                googleMapsUrl={settings?.google_maps_url}
+            />
         </>
     );
 }
