@@ -85,7 +85,7 @@ export default async function OrdersPage({
             <div className="overflow-hidden rounded-3xl bg-offwhite shadow-soft">
                 <div className="overflow-x-auto">
                     <table className="min-w-full">
-                        <thead className="bg-cream">
+                        <thead className="hidden bg-cream md:table-header-group">
                             <tr>
                                 <th className="px-4 py-4 text-left">
                                     Order

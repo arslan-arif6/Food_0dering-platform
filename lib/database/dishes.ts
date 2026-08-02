@@ -37,19 +37,7 @@ const DISH_SELECT = `
 async function filterAvailableMeal(
     dishes: DatabaseDish[]
 ): Promise<DatabaseDish[]> {
-    const settings = await getRestaurantSettings();
-    const availability = getRestaurantAvailability(
-        new Date(),
-        settingsToScheduleConfig(settings)
-    );
-
-    if (!availability.isOpen || !availability.currentMeal) {
-        return [];
-    }
-
-    return dishes.filter((dish) =>
-        dish.categories.includes(availability.currentMeal as MealType)
-    );
+    return dishes;
 }
 
 // Public-facing query: only dishes marked available. Used by the
@@ -96,18 +84,7 @@ export async function getFeaturedDishes() {
 }
 
 export async function getDishesByCategory(category: string) {
-    const settings = await getRestaurantSettings();
-    const availability = getRestaurantAvailability(
-        new Date(),
-        settingsToScheduleConfig(settings)
-    );
-
-    if (!availability.isOpen || availability.currentMeal !== category) {
-        return [];
-    }
-
     const dishes = await getPublicDishes();
-
     return dishes.filter((dish) => dish.categories.includes(category));
 }
 

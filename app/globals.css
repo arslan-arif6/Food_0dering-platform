@@ -4,10 +4,21 @@
 
 html {
   scroll-behavior: smooth;
+  /* Prevent translate-x-full off-screen elements (e.g. mobile nav drawer)
+     from inflating document.body.scrollWidth and causing apparent horizontal overflow.
+     clip (unlike hidden) does NOT create a scroll container, so body scroll is unaffected. */
+  overflow-x: clip;
 }
 
 body {
   @apply bg-offwhite text-walnut font-body antialiased;
+  /* Reserve scrollbar gutter so hiding overflow never causes a layout shift */
+  scrollbar-gutter: stable;
+}
+
+/* Applied by DishCard bottom-sheet to lock scroll without triggering reflow */
+body.scroll-locked {
+  overflow: hidden;
 }
 
 ::selection {

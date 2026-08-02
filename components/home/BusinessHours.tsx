@@ -33,24 +33,24 @@ export default async function BusinessHours() {
   const availability = getRestaurantAvailability(new Date(), config);
 
   return (
-    <section className="px-5 py-20 sm:px-8 lg:py-28">
+    <section className="px-4 py-14 sm:px-8 sm:py-20 lg:py-28">
       <BusinessHoursAutoRefresh />
 
       <div className="mx-auto max-w-5xl">
-        <div className="rounded-4xl bg-cream px-8 py-14 shadow-soft">
+        <div className="rounded-[1.75rem] bg-cream px-4 py-8 shadow-soft sm:rounded-4xl sm:px-8 sm:py-14">
           <div className="flex justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sage text-offwhite">
               <Clock className="h-8 w-8" />
             </div>
           </div>
 
-          <h2 className="mt-6 text-center font-display text-3xl font-semibold text-walnut">
+          <h2 className="mt-5 text-center font-display text-2xl font-semibold text-walnut sm:mt-6 sm:text-3xl">
             Business Hours
           </h2>
 
           <p className="mt-2 text-center text-walnut-light">Open every day</p>
 
-          <div className="mt-10 space-y-5">
+          <div className="mt-8 space-y-3 sm:mt-10 sm:space-y-5">
             {MEAL_ROWS.map((row) => {
               const isActive =
                 availability.isOpen && availability.currentMeal === row.meal;
@@ -63,7 +63,7 @@ export default async function BusinessHours() {
                   className={`rounded-2xl p-4 shadow-soft transition ${isActive ? "bg-sage/10 ring-2 ring-sage" : "bg-offwhite"
                     }`}
                 >
-                  <div className="flex items-center justify-between">
+                  <div className="flex flex-col gap-3 min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between">
                     <div className="flex items-center gap-3">
                       <Icon className="h-6 w-6 text-sage" />
                       <span className="font-medium text-walnut">
@@ -71,7 +71,7 @@ export default async function BusinessHours() {
                       </span>
                     </div>
 
-                    <span className="font-semibold text-sage-dark">
+                    <span className="text-sm font-semibold text-sage-dark sm:text-base">
                       {formatTime12Hour(times.open)} – {formatTime12Hour(times.close)}
                     </span>
                   </div>

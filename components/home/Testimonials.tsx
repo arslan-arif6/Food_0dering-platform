@@ -3,26 +3,26 @@ import { testimonials } from "@/lib/data";
 
 export default function Testimonials() {
   return (
-    <section className="bg-walnut px-5 py-20 sm:px-8 lg:py-28">
+    <section className="bg-walnut px-4 py-14 sm:px-8 sm:py-20 lg:py-28">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-sage-light">
             Customer Reviews
           </p>
-          <h2 className="mt-3 font-display text-3xl font-semibold text-offwhite sm:text-4xl">
+          <h2 className="mt-3 font-display text-2xl font-semibold leading-tight text-offwhite sm:text-4xl">
             Loved like it's made at home
           </h2>
         </div>
 
-        <div className="mt-14 grid gap-6 lg:grid-cols-3">
+        <div className="mt-10 grid gap-4 sm:mt-14 sm:gap-6 lg:grid-cols-3">
           {testimonials.map((testimonial) => (
             <div
               key={testimonial.id}
-              className="rounded-3xl bg-offwhite/5 p-8 shadow-soft ring-1 ring-offwhite/10 transition-all duration-300 hover:-translate-y-1.5 hover:bg-offwhite/10"
+              className="rounded-3xl bg-offwhite/5 p-5 shadow-soft ring-1 ring-offwhite/10 transition-all duration-300 hover:-translate-y-1.5 hover:bg-offwhite/10 sm:p-8"
             >
               <Quote className="h-8 w-8 text-sage-light" strokeWidth={1.5} />
               <p className="mt-5 text-[15px] leading-relaxed text-offwhite/90">
-                "{testimonial.quote}"
+                &quot;{testimonial.quote}&quot;
               </p>
               <div className="mt-6 flex items-center justify-between">
                 <div>

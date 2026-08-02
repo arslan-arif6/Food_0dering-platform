@@ -36,7 +36,7 @@ export default function CartPageClient({ settings }: Props) {
             <>
                 <Navbar />
 
-                <main className="mx-auto flex min-h-[75vh] max-w-7xl flex-col items-center justify-center px-5 py-20 text-center">
+                <main className="mx-auto flex min-h-[75vh] max-w-7xl flex-col items-center justify-center px-4 py-16 text-center sm:px-5 sm:py-20">
 
                     <div className="rounded-full bg-sage/10 p-8">
 
@@ -47,7 +47,7 @@ export default function CartPageClient({ settings }: Props) {
 
                     </div>
 
-                    <h1 className="mt-8 font-display text-4xl font-semibold text-walnut">
+                    <h1 className="mt-8 font-display text-3xl font-semibold text-walnut sm:text-4xl">
                         Your Cart is Empty
                     </h1>
 
@@ -58,7 +58,7 @@ export default function CartPageClient({ settings }: Props) {
 
                     <Link
                         href="/menu"
-                        className="mt-10 rounded-full bg-sage px-8 py-4 font-semibold text-offwhite transition-all duration-300 hover:-translate-y-1 hover:bg-sage-dark"
+                        className="mt-10 inline-flex min-h-12 items-center rounded-full bg-sage px-8 py-3.5 font-semibold text-offwhite transition-all duration-300 hover:-translate-y-1 hover:bg-sage-dark"
                     >
                         Browse Menu
                     </Link>
@@ -74,7 +74,7 @@ export default function CartPageClient({ settings }: Props) {
         <>
             <Navbar />
 
-            <main className="mx-auto max-w-7xl px-5 py-12">
+            <main className="mx-auto max-w-7xl px-4 py-8 sm:px-5 sm:py-12">
 
                 <Link
                     href="/menu"
@@ -86,7 +86,7 @@ export default function CartPageClient({ settings }: Props) {
 
                 <div className="mb-10">
 
-                    <h1 className="font-display text-4xl font-semibold text-walnut">
+                    <h1 className="font-display text-3xl font-semibold text-walnut sm:text-4xl">
                         Your Cart
                     </h1>
 
@@ -96,10 +96,18 @@ export default function CartPageClient({ settings }: Props) {
 
                 </div>
 
-                <div className="grid gap-10 lg:grid-cols-[2fr_1fr]">
+                <div className="grid gap-6 lg:grid-cols-[2fr_1fr] lg:gap-10 lg:items-start">
 
-                    <div className="space-y-6">
+                    {/* Summary first on mobile so CTA is visible without scrolling */}
+                    <div className="order-first lg:order-last">
+                        <OrderSummary
+                            subtotal={totalPrice}
+                            deliveryFee={deliveryFee}
+                            estimatedDeliveryTime={settings?.estimated_delivery_time ?? "30-45 mins"}
+                        />
+                    </div>
 
+                    <div className="order-last lg:order-first space-y-4 sm:space-y-6">
                         {cart.map((item) => (
                             <CartItem
                                 key={`${item.id}-${item.variantId}`}
@@ -109,14 +117,7 @@ export default function CartPageClient({ settings }: Props) {
                                 removeItem={removeItem}
                             />
                         ))}
-
                     </div>
-
-                    <OrderSummary
-                        subtotal={totalPrice}
-                        deliveryFee={deliveryFee}
-                        estimatedDeliveryTime={settings?.estimated_delivery_time ?? "30-45 mins"}
-                    />
 
                 </div>
 

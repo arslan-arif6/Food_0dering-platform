@@ -176,7 +176,7 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
     }
 
     return (
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-8">
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 sm:space-y-8">
             {unavailableItems.length > 0 && (
                 <UnavailableItemsBanner
                     items={unavailableItems}
@@ -196,12 +196,12 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
 
             {/* Customer Information */}
 
-            <section className="rounded-3xl bg-white p-8 shadow-soft">
-                <h2 className="font-display text-3xl font-semibold text-walnut">
+            <section className="rounded-3xl bg-white p-5 shadow-soft sm:p-8">
+                <h2 className="font-display text-2xl font-semibold text-walnut sm:text-3xl">
                     Customer Information
                 </h2>
 
-                <div className="mt-8 space-y-6">
+                <div className="mt-6 space-y-5 sm:mt-8 sm:space-y-6">
                     <div>
                         <label className="mb-2 flex items-center gap-2 font-medium">
                             <User className="h-5 w-5 text-sage" />
@@ -211,7 +211,7 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
                         <input
                             {...register("fullName")}
                             placeholder="Muhammad Ali"
-                            className="w-full rounded-xl border p-3 outline-none transition focus:border-sage"
+                            className="min-h-12 w-full rounded-xl border px-4 py-3 outline-none transition focus:border-sage"
                         />
 
                         {errors.fullName && (
@@ -230,7 +230,7 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
                         <input
                             {...register("phone")}
                             placeholder="03XXXXXXXXX"
-                            className="w-full rounded-xl border p-3 outline-none transition focus:border-sage"
+                            className="min-h-12 w-full rounded-xl border px-4 py-3 outline-none transition focus:border-sage"
                         />
 
                         {errors.phone && (
@@ -244,12 +244,12 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
 
             {/* Delivery Information */}
 
-            <section className="rounded-3xl bg-white p-8 shadow-soft">
-                <h2 className="font-display text-3xl font-semibold text-walnut">
+            <section className="rounded-3xl bg-white p-5 shadow-soft sm:p-8">
+                <h2 className="font-display text-2xl font-semibold text-walnut sm:text-3xl">
                     Delivery Information
                 </h2>
 
-                <div className="mt-8 space-y-6">
+                <div className="mt-6 space-y-5 sm:mt-8 sm:space-y-6">
                     <div>
                         <label className="mb-2 flex items-center gap-2 font-medium">
                             <MapPin className="h-5 w-5 text-sage" />
@@ -258,7 +258,7 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
 
                         <select
                             {...register("area")}
-                            className="w-full rounded-xl border p-3 outline-none focus:border-sage"
+                            className="min-h-12 w-full rounded-xl border px-4 py-3 outline-none focus:border-sage"
                         >
                             <option value="">Select Area</option>
                             {serviceAreas.length === 0 ? (
@@ -288,7 +288,7 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
                             {...register("address")}
                             rows={4}
                             placeholder="House Number, Street, Landmark..."
-                            className="w-full rounded-xl border p-3 outline-none focus:border-sage"
+                            className="w-full rounded-xl border px-4 py-3 outline-none focus:border-sage"
                         />
 
                         {errors.address && (
@@ -302,8 +302,8 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
 
             {/* Payment */}
 
-            <section className="rounded-3xl bg-white p-8 shadow-soft">
-                <h2 className="flex items-center gap-2 font-display text-3xl font-semibold text-walnut">
+            <section className="rounded-3xl bg-white p-5 shadow-soft sm:p-8">
+                <h2 className="flex items-center gap-2 font-display text-2xl font-semibold text-walnut sm:text-3xl">
                     <CreditCard className="h-7 w-7 text-sage" />
                     Payment Method
                 </h2>
@@ -312,7 +312,7 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
                     {paymentOptions.map((option) => (
                         <label
                             key={option.value}
-                            className={`flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition ${payment === option.value
+                            className={`flex min-h-14 cursor-pointer items-center gap-4 rounded-2xl border p-4 transition ${payment === option.value
                                 ? "border-sage bg-sage/10"
                                 : "border-gray-200"
                                 }`}
@@ -331,7 +331,7 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
 
             {/* Additional Notes */}
 
-            <section className="rounded-3xl bg-white p-8 shadow-soft">
+            <section className="rounded-3xl bg-white p-5 shadow-soft sm:p-8">
                 <h2 className="font-display text-2xl font-semibold text-walnut">
                     Additional Notes
                 </h2>
@@ -346,12 +346,12 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
 
             {/* Delivery Information */}
 
-            <section className="rounded-3xl bg-sage p-8 text-offwhite shadow-soft-lg">
+            <section className="rounded-3xl bg-sage p-5 text-offwhite shadow-soft-lg sm:p-8">
                 <h2 className="font-display text-2xl font-semibold">
                     Delivery Information
                 </h2>
 
-                <div className="mt-6 space-y-4 text-sm">
+                <div className="mt-5 space-y-4 text-sm sm:mt-6">
                     <div className="flex items-center gap-3">
                         <Clock className="h-5 w-5" />
                         <span>Estimated delivery: {settings?.estimated_delivery_time ?? "30-45 mins"}</span>
@@ -400,7 +400,7 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
             <button
                 type="submit"
                 disabled={isSubmitting || unavailableItems.length > 0 || belowMinimum}
-                className="w-full rounded-2xl bg-sage py-4 text-lg font-semibold text-white transition hover:bg-sage-dark disabled:cursor-not-allowed disabled:opacity-50"
+                className="min-h-14 w-full rounded-2xl bg-sage py-4 text-base font-semibold text-white transition hover:bg-sage-dark disabled:cursor-not-allowed disabled:opacity-50 sm:text-lg"
             >
                 {isSubmitting
                     ? "Placing Order..."

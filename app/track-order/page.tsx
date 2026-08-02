@@ -24,30 +24,30 @@ export default async function TrackOrderPage({
             <TrackOrderAutoLoad hasId={Boolean(id)} />
             {order && <OrderStatusPoller />}
 
-            <div className="mx-auto max-w-4xl px-6 py-20">
-                <h1 className="font-display text-5xl font-bold text-walnut">
+            <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-20">
+                <h1 className="font-display text-4xl font-bold leading-tight text-walnut sm:text-5xl">
                     Track Your Order
                 </h1>
 
-                <p className="mt-4 text-lg text-walnut-light">
+                <p className="mt-4 text-[15px] leading-7 text-walnut-light sm:text-lg">
                     Enter your Order ID to check the latest status.
                 </p>
 
                 <form
                     action="/track-order"
                     method="get"
-                    className="mt-10 flex flex-col gap-4 sm:flex-row"
+                    className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4"
                 >
                     <input
                         name="id"
                         defaultValue={id ?? ""}
                         placeholder="Enter Order ID"
-                        className="flex-1 rounded-2xl border border-sage/30 bg-white px-5 py-4 outline-none transition focus:border-sage"
+                        className="min-h-14 flex-1 rounded-2xl border border-sage/30 bg-white px-5 py-4 outline-none transition focus:border-sage"
                     />
 
                     <button
                         type="submit"
-                        className="inline-flex items-center justify-center gap-2 rounded-2xl bg-sage px-6 py-4 font-semibold text-offwhite transition hover:bg-sage-dark"
+                        className="inline-flex min-h-14 items-center justify-center gap-2 rounded-2xl bg-sage px-6 py-4 font-semibold text-offwhite transition hover:bg-sage-dark"
                     >
                         <Search className="h-5 w-5" />
                         Track
@@ -57,7 +57,7 @@ export default async function TrackOrderPage({
                 <RecentOrdersList currentId={id} />
 
                 {!id && (
-                    <div className="mt-10 rounded-3xl bg-offwhite p-10 text-center shadow-soft">
+                    <div className="mt-8 rounded-3xl bg-offwhite p-5 text-center shadow-soft sm:mt-10 sm:p-10">
                         <p className="text-walnut-light">
                             No recent orders found. You can also search using an
                             Order ID above.
@@ -73,7 +73,7 @@ export default async function TrackOrderPage({
                 )}
 
                 {id && !order && (
-                    <div className="mt-10 rounded-3xl bg-offwhite p-10 text-center shadow-soft">
+                    <div className="mt-8 rounded-3xl bg-offwhite p-5 text-center shadow-soft sm:mt-10 sm:p-10">
                         <h2 className="font-display text-2xl font-semibold text-walnut">
                             Order Not Found
                         </h2>
@@ -87,12 +87,12 @@ export default async function TrackOrderPage({
                 {order && (
                     <div className="mt-10 space-y-8">
 
-                        <div className="rounded-3xl bg-offwhite p-8 shadow-soft">
+                        <div className="rounded-3xl bg-offwhite p-5 shadow-soft sm:p-8">
                             <h2 className="font-display text-2xl font-semibold text-walnut">
                                 Order Information
                             </h2>
 
-                            <div className="mt-6 grid gap-6 md:grid-cols-2">
+                            <div className="mt-6 grid gap-5 md:grid-cols-2 md:gap-6">
 
                                 <div>
                                     <p className="text-sm text-walnut-light">
@@ -153,7 +153,7 @@ export default async function TrackOrderPage({
                             </div>
                         </div>
 
-                        <div className="rounded-3xl bg-offwhite p-8 shadow-soft">
+                        <div className="rounded-3xl bg-offwhite p-5 shadow-soft sm:p-8">
 
                             <h2 className="font-display text-2xl font-semibold text-walnut">
                                 Ordered Items
@@ -164,9 +164,9 @@ export default async function TrackOrderPage({
                                 {order.order_items.map((item: any) => (
                                     <div
                                         key={item.id}
-                                        className="flex items-center justify-between rounded-2xl border border-cream p-4"
+                                        className="flex items-start justify-between gap-3 rounded-2xl border border-cream p-4"
                                     >
-                                        <div>
+                                        <div className="min-w-0">
                                             <h3 className="font-medium text-walnut">
                                                 {item.dish_name}
                                             </h3>
@@ -176,7 +176,7 @@ export default async function TrackOrderPage({
                                             </p>
                                         </div>
 
-                                        <div className="text-right">
+                                        <div className="shrink-0 text-right">
                                             <p>
                                                 Qty: {item.quantity}
                                             </p>
