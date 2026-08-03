@@ -64,7 +64,7 @@ export default function Hero({ name, description }: HeroProps) {
         </div>
 
         <div className="relative z-10 flex justify-center lg:justify-end">
-          <div className="relative w-full max-w-[min(100%,24rem)] animate-float sm:max-w-md lg:max-w-none">
+          <div className="relative w-full max-w-[min(100%,24rem)] animate-float sm:max-w-md lg:max-w-[420px]">
             <div className="absolute inset-6 -z-10 rounded-[2rem] bg-sage/20 blur-2xl" />
             <div className="overflow-hidden rounded-[1.75rem] border-4 border-offwhite shadow-soft-lg sm:rounded-[2.5rem] sm:border-8">
               <Image

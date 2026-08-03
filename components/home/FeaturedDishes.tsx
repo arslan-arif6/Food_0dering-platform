@@ -48,7 +48,7 @@ export default async function FeaturedDishes({ category }: FeaturedDishesProps) 
             <p className="mt-4 text-walnut-light">{availability.message}</p>
           </div>
         ) : (
-          <div className="mt-12 grid gap-5 min-[390px]:grid-cols-2 sm:mt-16 sm:gap-6 md:gap-7 lg:grid-cols-3">
+          <div className="mt-12 grid grid-cols-2 gap-3 sm:mt-16 sm:gap-6 md:gap-7 lg:grid-cols-3">
             {dishes.map((dish) => (
               <DishCard key={dish.id} dish={dish} />
             ))}

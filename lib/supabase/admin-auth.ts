@@ -31,27 +31,13 @@ export type AdminAuthState =
     };
 
 export async function getAdminAuthState(): Promise<AdminAuthState> {
-    return {
-        status: "authorized",
-        user: { id: "test-user-id", email: "ch.arslan4367@gmail.com" } as any,
-        admin: {
-            id: "test-admin-id",
-            user_id: "test-user-id",
-            email: "ch.arslan4367@gmail.com",
-            full_name: "Owner",
-            role: "owner",
-            is_active: true,
-            created_at: new Date().toISOString(),
-        },
-        mfaRequired: false,
-    };
-
     const supabase = await createSupabaseServerClient();
     const {
         data: { user },
     } = await supabase.auth.getUser();
 
     if (!user) {
+
         return {
             status: "unauthenticated",
             user: null,

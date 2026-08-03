@@ -187,14 +187,14 @@ export function parseDishFields(values: unknown) {
 // image is optional (keep existing image if no new file is chosen).
 export const editDishFormSchema = z.object({
     ...dishFormSchema.shape,
-    image: z.custom<File | undefined>().superRefine(checkOptionalImage),
+    image: z.custom<File>().optional().superRefine(checkOptionalImage),
 });
 
 // Canonical (server-side) schema for Edit Dish: identical to
 // dishFieldsSchema except image is optional.
 export const editDishFieldsSchema = z.object({
     ...dishFieldsSchema.shape,
-    image: z.custom<File | undefined>().superRefine(checkOptionalImage),
+    image: z.custom<File>().optional().superRefine(checkOptionalImage),
 });
 
 // Shared submit-value shape for both Create and Edit actions/forms —

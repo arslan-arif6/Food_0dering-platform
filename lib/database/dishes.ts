@@ -37,7 +37,19 @@ const DISH_SELECT = `
 async function filterAvailableMeal(
     dishes: DatabaseDish[]
 ): Promise<DatabaseDish[]> {
-    return dishes;
+    const settings = await getRestaurantSettings();
+    const availability = getRestaurantAvailability(
+        new Date(),
+        settingsToScheduleConfig(settings)
+    );
+
+    if (!availability.isOpen || !availability.currentMeal) {
+        return [];
+    }
+
+    return dishes.filter((dish) =>
+        dish.categories.includes(availability.currentMeal as MealType)
+    );
 }
 
 // Public-facing query: only dishes marked available. Used by the
@@ -230,6 +242,7 @@ export async function updateDish(
             image: values.imageUrl,
             featured: values.featured,
             available: values.available,
+            sold_out: values.soldOut,
         })
         .eq("id", id);
 

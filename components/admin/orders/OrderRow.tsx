@@ -66,6 +66,8 @@ export default function OrderRow({
                                 customerName: order.customerName,
                                 phone: order.phone,
                                 status: order.status,
+                                address: order.address,
+                                total: order.total,
                             }}
                         />
                     </div>
@@ -124,6 +126,8 @@ export default function OrderRow({
                                 customerName: order.customerName,
                                 phone: order.phone,
                                 status: order.status,
+                                address: order.address,
+                                total: order.total,
                             }}
                         />
                     </div>
