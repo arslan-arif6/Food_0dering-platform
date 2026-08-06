@@ -7,12 +7,14 @@ import { toast } from "sonner";
 import FormSection from "@/components/admin/FormSection";
 import TextField from "@/components/admin/fields/TextField";
 import { supabase } from "@/lib/supabase/client";
+import { changeOwnPasswordAction } from "@/lib/actions/account";
 
 type Props = {
     adminEmail: string;
 };
 
 export default function PasswordSecuritySection({ adminEmail }: Props) {
+    const [currentPassword, setCurrentPassword] = useState("");
     const [newPassword, setNewPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [resettingPassword, setResettingPassword] = useState(false);
@@ -20,7 +22,9 @@ export default function PasswordSecuritySection({ adminEmail }: Props) {
 
     async function handlePasswordReset() {
         setResettingPassword(true);
-        const { error } = await supabase.auth.resetPasswordForEmail(adminEmail);
+        const { error } = await supabase.auth.resetPasswordForEmail(adminEmail, {
+            redirectTo: `${window.location.origin}/admin/set-password`,
+        });
         setResettingPassword(false);
 
         if (error) {
@@ -32,8 +36,13 @@ export default function PasswordSecuritySection({ adminEmail }: Props) {
     }
 
     function handlePasswordChange() {
+        if (!currentPassword) {
+            toast.error("Enter your current password");
+            return;
+        }
+
         if (newPassword.length < 8) {
-            toast.error("Password must be at least 8 characters");
+            toast.error("New password must be at least 8 characters");
             return;
         }
 
@@ -42,16 +51,20 @@ export default function PasswordSecuritySection({ adminEmail }: Props) {
             return;
         }
 
-        startTransition(async () => {
-            const { error } = await supabase.auth.updateUser({
-                password: newPassword,
-            });
+        if (newPassword === currentPassword) {
+            toast.error("New password must be different from current password");
+            return;
+        }
 
-            if (error) {
-                toast.error(error.message);
+        startTransition(async () => {
+            const result = await changeOwnPasswordAction(currentPassword, newPassword);
+
+            if (!result.success) {
+                toast.error(result.error);
                 return;
             }
 
+            setCurrentPassword("");
             setNewPassword("");
             setConfirmPassword("");
             toast.success("Password updated");
@@ -63,6 +76,14 @@ export default function PasswordSecuritySection({ adminEmail }: Props) {
             title="Security"
             description="Change your password and manage secure sign-in."
         >
+            <TextField
+                id="currentPassword"
+                label="Current Password"
+                type="password"
+                value={currentPassword}
+                onChange={(e) => setCurrentPassword(e.target.value)}
+            />
+
             <div className="grid gap-5 lg:grid-cols-2">
                 <TextField
                     id="newPassword"
@@ -106,4 +127,3 @@ export default function PasswordSecuritySection({ adminEmail }: Props) {
         </FormSection>
     );
 }
-

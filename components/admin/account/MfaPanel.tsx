@@ -4,7 +4,7 @@ import { useEffect, useState, useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { KeyRound, Loader2, ShieldCheck, ShieldPlus, Trash2 } from "lucide-react";
 import { toast } from "sonner";
-
+import ConfirmDialog from "@/components/admin/ConfirmDialog";
 import { supabase } from "@/lib/supabase/client";
 import TextField from "@/components/admin/fields/TextField";
 
@@ -32,7 +32,7 @@ export default function MfaPanel({ mode = "settings" }: Props) {
     const [enrollment, setEnrollment] = useState<Enrollment | null>(null);
     const [code, setCode] = useState("");
     const [pending, startTransition] = useTransition();
-
+    const [factorToRemove, setFactorToRemove] = useState<MfaFactor | null>(null);
     const hasFactor = verifiedFactors.length > 0;
     const qrSrc = enrollment?.qrCode
         ? `data:image/svg+xml;utf-8,${encodeURIComponent(enrollment.qrCode)}`
@@ -130,6 +130,7 @@ export default function MfaPanel({ mode = "settings" }: Props) {
             }
 
             toast.success("2-step verification removed");
+            setFactorToRemove(null);
             await loadFactors();
             router.refresh();
         });
@@ -300,7 +301,7 @@ export default function MfaPanel({ mode = "settings" }: Props) {
                             </div>
                             <button
                                 type="button"
-                                onClick={() => removeFactor(factor.id)}
+                                onClick={() => setFactorToRemove(factor)}
                                 disabled={pending}
                                 className="flex items-center gap-1.5 rounded-full bg-red-50 px-4 py-2 text-xs font-semibold text-red-600 transition hover:bg-red-100 disabled:opacity-60"
                             >
@@ -311,6 +312,17 @@ export default function MfaPanel({ mode = "settings" }: Props) {
                     ))}
                 </div>
             )}
+
+            <ConfirmDialog
+                open={Boolean(factorToRemove)}
+                title="Remove 2-step verification?"
+                description="You'll be able to log in with just your password after this. You can set it up again anytime."
+                confirmText="Remove"
+                onCancel={() => setFactorToRemove(null)}
+                onConfirm={() => {
+                    if (factorToRemove) removeFactor(factorToRemove.id);
+                }}
+            />
         </div>
     );
 }

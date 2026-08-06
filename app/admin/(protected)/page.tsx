@@ -4,8 +4,6 @@ import {
     Wallet,
     Users,
     Clock,
-    TrendingUp,
-    Award,
     XCircle,
     Plus,
     ClipboardList,
@@ -50,11 +48,6 @@ export default async function AdminDashboardPage() {
         { label: "Pending Orders", value: String(data.pendingOrders), icon: Clock },
         { label: "Today's Revenue", value: `Rs. ${data.todayRevenue.toFixed(0)}`, icon: Wallet },
         { label: "Total Customers", value: String(data.totalCustomers), icon: Users },
-    ];
-
-    const secondaryCards = [
-        { label: "Avg Order Value", value: `Rs. ${data.avgOrderValue.toFixed(0)}`, icon: TrendingUp },
-        { label: "Best Dish (Month)", value: data.bestDish ?? "—", icon: Award },
         { label: "This Month Revenue", value: `Rs. ${data.monthRevenue.toFixed(0)}`, icon: Wallet },
         { label: "Cancelled Today", value: String(data.cancelledToday), icon: XCircle },
     ];
@@ -68,7 +61,7 @@ export default async function AdminDashboardPage() {
                 <p className="mt-1 text-[15px] text-walnut-light">{getTodayLabel()}</p>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-4">
+            <div className="grid grid-cols-2 gap-3 sm:gap-5 lg:grid-cols-3">
                 {statCards.map((stat) => (
                     <div
                         key={stat.label}
@@ -81,25 +74,6 @@ export default async function AdminDashboardPage() {
                             {stat.label}
                         </p>
                         <p className="mt-1 break-words font-display text-xl font-semibold text-walnut sm:text-3xl">
-                            {stat.value}
-                        </p>
-                    </div>
-                ))}
-            </div>
-
-            <div className="grid grid-cols-2 gap-3 sm:gap-5 xl:grid-cols-4">
-                {secondaryCards.map((stat) => (
-                    <div
-                        key={stat.label}
-                        className="min-w-0 rounded-2xl bg-offwhite p-4 shadow-soft sm:rounded-3xl sm:p-6"
-                    >
-                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl bg-sage/15 text-sage-dark sm:h-12 sm:w-12">
-                            <stat.icon className="h-5 w-5 sm:h-6 sm:w-6" strokeWidth={1.9} />
-                        </div>
-                        <p className="mt-4 truncate text-xs font-medium text-walnut-light sm:mt-5 sm:text-sm">
-                            {stat.label}
-                        </p>
-                        <p className="mt-1 break-words font-display text-lg font-semibold text-walnut sm:text-2xl">
                             {stat.value}
                         </p>
                     </div>

@@ -1,9 +1,13 @@
 "use server";
 
-import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 
 export async function getOrder(id: string) {
-    const supabase = await createSupabaseServerClient();
+    if (!id || typeof id !== "string") {
+        return null;
+    }
+
+    const supabase = createServiceRoleClient();
 
     const { data, error } = await supabase
         .from("orders")

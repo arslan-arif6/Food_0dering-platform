@@ -30,6 +30,23 @@ export type AdminAuthState =
         mfaRequired: boolean;
     };
 
+async function resolveMfaRequired(
+    supabase: Awaited<ReturnType<typeof createSupabaseServerClient>>,
+    role: AdminRole
+): Promise<boolean> {
+    const { data: aal } = await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
+
+    if (role === "owner") {
+        // Owner must always have MFA set up and verified.
+        return aal?.currentLevel !== "aal2";
+    }
+
+    // Regular admins: only enforced if they chose to enroll a factor
+    // themselves (nextLevel would be aal2 in that case). If they never
+    // enrolled, nextLevel stays aal1 and they're never gated.
+    return aal?.nextLevel === "aal2" && aal?.currentLevel !== "aal2";
+}
+
 export async function getAdminAuthState(): Promise<AdminAuthState> {
     const supabase = await createSupabaseServerClient();
     const {
@@ -37,7 +54,6 @@ export async function getAdminAuthState(): Promise<AdminAuthState> {
     } = await supabase.auth.getUser();
 
     if (!user) {
-
         return {
             status: "unauthenticated",
             user: null,
@@ -66,14 +82,11 @@ export async function getAdminAuthState(): Promise<AdminAuthState> {
             created_at: user.created_at,
         };
 
-        const { data: aal } =
-            await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-
         return {
             status: "authorized",
             user,
             admin: fallbackAdmin,
-            mfaRequired: aal?.currentLevel !== "aal2",
+            mfaRequired: await resolveMfaRequired(supabase, "owner"),
         };
     }
 
@@ -95,13 +108,10 @@ export async function getAdminAuthState(): Promise<AdminAuthState> {
         };
     }
 
-    const { data: aal } =
-        await supabase.auth.mfa.getAuthenticatorAssuranceLevel();
-
     return {
         status: "authorized",
         user,
         admin: admin as CurrentAdmin,
-        mfaRequired: aal?.currentLevel !== "aal2",
+        mfaRequired: await resolveMfaRequired(supabase, admin.role as AdminRole),
     };
 }

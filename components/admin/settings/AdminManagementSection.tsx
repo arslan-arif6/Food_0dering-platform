@@ -15,20 +15,11 @@ import FormSection from "@/components/admin/FormSection";
 import TextField from "@/components/admin/fields/TextField";
 import {
     getAdmins,
-    inviteAdminAction,
+    createAdminAction,
     reactivateAdminAction,
     revokeAdminAction,
+    type AdminRow,
 } from "@/lib/actions/admin-management";
-
-type AdminRow = {
-    id: string;
-    user_id: string;
-    email: string;
-    full_name: string | null;
-    role: string;
-    is_active: boolean;
-    created_at: string;
-};
 
 type Props = {
     currentAdminEmail: string;
@@ -37,20 +28,30 @@ type Props = {
 export default function AdminManagementSection({ currentAdminEmail }: Props) {
     const [admins, setAdmins] = useState<AdminRow[] | null>(null);
     const [loading, setLoading] = useState(true);
+    const [loadError, setLoadError] = useState(false);
+    const [loadErrorMessage, setLoadErrorMessage] = useState<string>("");
+
     const [inviteEmail, setInviteEmail] = useState("");
     const [inviteName, setInviteName] = useState("");
+    const [invitePassword, setInvitePassword] = useState("");
+    const [lastCreated, setLastCreated] = useState<{ email: string; password: string; full_name: string } | null>(null);
+
     const [adminToRevoke, setAdminToRevoke] = useState<AdminRow | null>(null);
     const [isPending, startTransition] = useTransition();
 
     async function loadAdmins() {
-        try {
-            const data = await getAdmins();
-            setAdmins(data as AdminRow[]);
-        } catch {
-            toast.error("Couldn't load admin list");
-        } finally {
-            setLoading(false);
+        const { data, error } = await getAdmins();
+
+        if (error) {
+            console.error(error);
+            setLoadErrorMessage(error);
+            setLoadError(true);
+        } else {
+            setAdmins(data);
+            setLoadError(false);
         }
+
+        setLoading(false);
     }
 
     useEffect(() => {
@@ -61,15 +62,20 @@ export default function AdminManagementSection({ currentAdminEmail }: Props) {
     const self = admins?.find((a) => a.email === currentAdminEmail);
     const isOwner = self?.role === "owner";
 
-    function handleInvite() {
+    function handleCreate() {
         if (!inviteEmail.trim()) {
             toast.error("Enter an email address");
             return;
         }
+        if (invitePassword.length < 8) {
+            toast.error("Password must be at least 8 characters");
+            return;
+        }
 
         startTransition(async () => {
-            const result = await inviteAdminAction(
+            const result = await createAdminAction(
                 inviteEmail.trim(),
+                invitePassword,
                 inviteName.trim()
             );
 
@@ -78,9 +84,11 @@ export default function AdminManagementSection({ currentAdminEmail }: Props) {
                 return;
             }
 
-            toast.success(`Invite sent to ${inviteEmail}`);
+            toast.success(`Admin account created for ${inviteEmail}`);
+            setLastCreated({ email: inviteEmail.trim(), password: invitePassword, full_name: inviteName.trim() });
             setInviteEmail("");
             setInviteName("");
+            setInvitePassword("");
             await loadAdmins();
         });
     }
@@ -124,10 +132,20 @@ export default function AdminManagementSection({ currentAdminEmail }: Props) {
         );
     }
 
+    if (loadError) {
+        return (
+            <FormSection title="Admin Team">
+                <p className="text-sm text-red-600">
+                    Couldn&apos;t load the admin list: {loadErrorMessage}
+                </p>
+            </FormSection>
+        );
+    }
+
     return (
         <FormSection
             title="Admin Team"
-            description="Owner can invite admins, remove access, and restore access."
+            description="Owner can create admin accounts, remove access, and restore access."
         >
             <div className="flex flex-col gap-3">
                 {admins?.map((admin) => (
@@ -201,7 +219,10 @@ export default function AdminManagementSection({ currentAdminEmail }: Props) {
             {isOwner && (
                 <div className="mt-2 flex flex-col gap-3 rounded-2xl border border-dashed border-walnut/15 p-4">
                     <p className="text-sm font-semibold text-walnut">
-                        Invite New Admin
+                        Add New Admin
+                    </p>
+                    <p className="text-xs text-walnut-light">
+                        Set an email and password here, then share those credentials with them directly. 2-step verification is optional for them.
                     </p>
                     <div className="grid gap-3 sm:grid-cols-2">
                         <TextField
@@ -218,9 +239,17 @@ export default function AdminManagementSection({ currentAdminEmail }: Props) {
                             onChange={(e) => setInviteEmail(e.target.value)}
                         />
                     </div>
+                    <TextField
+                        id="invitePassword"
+                        label="Password"
+                        type="password"
+                        minLength={8}
+                        value={invitePassword}
+                        onChange={(e) => setInvitePassword(e.target.value)}
+                    />
                     <button
                         type="button"
-                        onClick={handleInvite}
+                        onClick={handleCreate}
                         disabled={isPending}
                         className="flex w-fit items-center gap-2 rounded-full bg-sage px-5 py-2.5 text-sm font-semibold text-offwhite transition hover:bg-sage-dark disabled:opacity-60"
                     >
@@ -229,8 +258,16 @@ export default function AdminManagementSection({ currentAdminEmail }: Props) {
                         ) : (
                             <UserPlus className="h-4 w-4" />
                         )}
-                        Send Invite
+                        Create Admin Account
                     </button>
+
+                    {lastCreated && (
+                        <div className="rounded-xl bg-sage/10 px-4 py-3 text-sm text-sage-dark">
+                            Account created. Share these credentials with {lastCreated.full_name || lastCreated.email}:
+                            <br />
+                            <span className="font-mono">{lastCreated.email}</span> / <span className="font-mono">{lastCreated.password}</span>
+                        </div>
+                    )}
                 </div>
             )}
 

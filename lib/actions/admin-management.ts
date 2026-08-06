@@ -6,6 +6,16 @@ import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import { getUser } from "@/lib/supabase/getUser";
 
+export type AdminRow = {
+    id: string;
+    user_id: string;
+    email: string;
+    full_name: string | null;
+    role: string;
+    is_active: boolean;
+    created_at: string;
+};
+
 export type AdminActionResult =
     | { success: true }
     | { success: false; error: string };
@@ -28,7 +38,7 @@ async function requireOwner() {
     return { user, error: null as string | null };
 }
 
-export async function getAdmins() {
+export async function getAdmins(): Promise<{ data: AdminRow[] | null; error: string | null }> {
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
         .from("admins")
@@ -37,24 +47,37 @@ export async function getAdmins() {
 
     if (error) {
         console.error(error);
-        return [];
+        return { data: null, error: error.message };
     }
-    return data;
+
+    return { data, error: null };
 }
 
-export async function inviteAdminAction(
+export async function createAdminAction(
     email: string,
+    password: string,
     fullName: string
 ): Promise<AdminActionResult> {
     const { error: authError } = await requireOwner();
     if (authError) return { success: false, error: authError };
 
+    if (password.length < 8) {
+        return { success: false, error: "Password must be at least 8 characters" };
+    }
+
     const serviceClient = createServiceRoleClient();
 
-    const { data, error } = await serviceClient.auth.admin.inviteUserByEmail(email);
+    // Owner sets the credentials directly and hands them to the new admin
+    // out of band (WhatsApp/in person) — no invite email round-trip.
+    const { data, error } = await serviceClient.auth.admin.createUser({
+        email,
+        password,
+        email_confirm: true,
+    });
+
     if (error || !data.user) {
         console.error(error);
-        return { success: false, error: error?.message ?? "Couldn't send invite" };
+        return { success: false, error: error?.message ?? "Couldn't create admin account" };
     }
 
     const { error: insertError } = await serviceClient.from("admins").insert({
@@ -67,8 +90,8 @@ export async function inviteAdminAction(
 
     if (insertError) {
         console.error(insertError);
-        // Roll back the auth invite so we don't leave an orphaned auth
-        // user with no matching admins row.
+        // Roll back the auth user so we don't leave an orphaned account
+        // with no matching admins row.
         await serviceClient.auth.admin.deleteUser(data.user.id);
         return { success: false, error: "Couldn't create admin record. Please try again." };
     }

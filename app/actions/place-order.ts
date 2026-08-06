@@ -3,8 +3,8 @@
 import { z } from "zod";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
-import type { OrderStatus, PaymentMethod } from "@/lib/database/orders";
-
+import type { PaymentMethod } from "@/lib/database/orders";
+import { createServiceRoleClient } from "@/lib/supabase/service-role";
 import {
     getRestaurantAvailability,
     canOrderDish,
@@ -22,6 +22,10 @@ const placeOrderSchema = z.object({
 
     paymentMethod: z.enum(["cash_on_delivery", "jazzcash", "easypaisa"]),
 
+    // These client-supplied totals are no longer trusted for the actual
+    // insert — the server recalculates everything below from real
+    // dish_variants prices and the real settings row. Kept in the schema
+    // only so the shape still matches what the client already sends.
     subtotal: z.number().nonnegative(),
     deliveryFee: z.number().nonnegative(),
     total: z.number().nonnegative(),
@@ -72,34 +76,59 @@ export async function placeOrder(input: PlaceOrderInput) {
     }
 
     const supabase = await createSupabaseServerClient();
+    const {
+        data: { user },
+        error: authError,
+    } = await supabase.auth.getUser();
+
+    console.log("=== ORDER AUTH DEBUG ===");
+    console.log("User ID:", user?.id ?? null);
+    console.log("User email:", user?.email ?? null);
+    console.log("Auth error:", authError);
+    console.log("========================");
+
+    // Re-derive every item's real price and validate availability —
+    // never trust unitPrice/subtotal/total from the client.
+    const verifiedItems: {
+        dishId: string;
+        variantId: string | null;
+        dishName: string;
+        variantName: string;
+        unitPrice: number;
+        quantity: number;
+        lineTotal: number;
+    }[] = [];
+
     for (const item of data.items) {
-        if (!item.dishId) continue;
+        if (!item.dishId) {
+            throw new Error(
+                "Invalid cart item. Please refresh the menu and try again."
+            );
+        }
 
         const { data: dish } = await supabase
             .from("dishes")
             .select(`
-            id,
-            sold_out,
-            dish_categories (
-                categories (
-                    slug
+                id,
+                name,
+                sold_out,
+                dish_categories (
+                    categories (
+                        slug
+                    )
+                ),
+                dish_variants (
+                    id,
+                    name,
+                    price
                 )
-            )
-        `)
+            `)
             .eq("id", item.dishId)
             .single();
-        console.log("================================");
-        console.log("Current Meal:", availability.currentMeal);
-        console.log("Dish ID:", item.dishId);
-        console.log("Dish Name:", item.dishName);
-
-        console.dir(dish, { depth: null });
-
-        console.log("================================");
 
         if (!dish) {
             throw new Error(
-                `${item.dishName} is not available now. Please order from the current meal menu.`
+                `${item.dishName} is not available now. Please order from the current menu.`
             );
         }
 
@@ -112,71 +141,86 @@ export async function placeOrder(input: PlaceOrderInput) {
         const categories = dish.dish_categories.map(
             (entry: any) => entry.categories.slug
         );
+
         if (!canOrderDish(categories, scheduleConfig)) {
             throw new Error(
                 `${item.dishName} is not available during ${availability.currentMeal ?? "this"} time. Please order available dishes only.`
             );
         }
+
+        const variant = item.variantId
+            ? dish.dish_variants.find((v: any) => v.id === item.variantId)
+            : dish.dish_variants[0];
+
+        if (!variant) {
+            throw new Error(
+                `${item.dishName} — selected portion is no longer available. Please update your cart.`
+            );
+        }
+
+        const realPrice = Number(variant.price);
+
+        verifiedItems.push({
+            dishId: dish.id,
+            variantId: variant.id,
+            dishName: dish.name,
+            variantName: variant.name,
+            unitPrice: realPrice,
+            quantity: item.quantity,
+            lineTotal: realPrice * item.quantity,
+        });
     }
 
-    const status: OrderStatus = "new";
+    const subtotal = verifiedItems.reduce((sum, item) => sum + item.lineTotal, 0);
+
+    const deliveryFee =
+        settings?.free_delivery_threshold != null &&
+            subtotal >= settings.free_delivery_threshold
+            ? 0
+            : settings?.delivery_fee ?? 0;
+
+    const total = subtotal + deliveryFee;
+
     const paymentMethod: PaymentMethod = data.paymentMethod;
 
-    const { data: order, error: orderError } = await supabase
-        .from("orders")
-        .insert({
-            customer_id: null,
-            customer_name: data.customerName,
-            phone: data.phone,
-            address: data.address,
-            notes: data.notes,
+    // IMPORTANT:
+    // Use service-role client ONLY on the server to call the protected
+    // atomic RPC. Never expose SUPABASE_SERVICE_ROLE_KEY to the browser.
+    const serviceSupabase = createServiceRoleClient();
 
-            payment_method: paymentMethod,
-            status,
+    const orderItems = verifiedItems.map((item) => ({
+        dish_id: item.dishId,
+        dish_variant_id: item.variantId,
+        dish_name: item.dishName,
+        variant_name: item.variantName,
+        unit_price: item.unitPrice,
+        quantity: item.quantity,
+        line_total: item.lineTotal,
+    }));
 
-            subtotal: data.subtotal,
-            delivery_fee: data.deliveryFee,
-            total: data.total,
-        })
-        .select("id")
-        .single();
+    const { data: orderId, error: orderError } =
+        await serviceSupabase.rpc("place_order_atomic", {
+            p_customer_name: data.customerName,
+            p_phone: data.phone,
+            p_address: data.address,
+            p_notes: data.notes,
+            p_payment_method: paymentMethod,
+            p_subtotal: subtotal,
+            p_delivery_fee: deliveryFee,
+            p_total: total,
+            p_items: orderItems,
+        });
 
-    if (orderError || !order) {
+    if (orderError || !orderId) {
         console.error("========== ORDER ERROR ==========");
         console.error(orderError);
         console.error("===============================");
 
-        throw new Error(JSON.stringify(orderError ?? "Unable to create order."));
-    }
-
-    const orderItems = data.items.map((item) => ({
-        order_id: order.id,
-
-        dish_id: item.dishId,
-        dish_variant_id: item.variantId,
-
-        dish_name: item.dishName,
-        variant_name: item.variantName,
-
-        unit_price: item.unitPrice,
-        quantity: item.quantity,
-        line_total: item.unitPrice * item.quantity,
-    }));
-
-    const { error: itemsError } = await supabase
-        .from("order_items")
-        .insert(orderItems);
-
-    if (itemsError) {
-        console.error(itemsError);
-
-        await supabase.from("orders").delete().eq("id", order.id);
-
-        throw new Error("Unable to save order items.");
+        throw new Error("Unable to create order. Please try again.");
     }
 
     return {
         success: true,
-        orderId: order.id,
+        orderId,
     };
 }

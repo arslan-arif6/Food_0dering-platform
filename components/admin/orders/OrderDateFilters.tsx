@@ -31,7 +31,11 @@ const filters: {
         },
     ];
 
-export default function OrderDateFilters() {
+export default function OrderDateFilters({
+    basePath = "/admin/orders",
+}: {
+    basePath?: string;
+}) {
     const searchParams = useSearchParams();
 
     const current =
@@ -50,7 +54,7 @@ export default function OrderDateFilters() {
                 return (
                     <Link
                         key={filter.value}
-                        href={`/admin/orders?${params.toString()}`}
+                        href={`${basePath}?${params.toString()}`}
                         className={`rounded-full px-4 py-2 text-sm font-medium transition ${active
                             ? "bg-sage text-offwhite"
                             : "border border-sage text-sage hover:bg-sage hover:text-offwhite"

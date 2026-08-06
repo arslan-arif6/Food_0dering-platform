@@ -4,7 +4,16 @@ import { useState } from "react";
 import { useRouter } from "next/navigation";
 import { useForm, type Resolver } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader2, ShieldCheck } from "lucide-react";
+import {
+    Loader2,
+    ShieldCheck,
+    Store,
+    Truck,
+    CreditCard,
+    Clock,
+    Globe,
+    Lock,
+} from "lucide-react";
 import { toast } from "sonner";
 
 import TextField from "@/components/admin/fields/TextField";
@@ -29,12 +38,12 @@ type Props = {
 };
 
 const TABS = [
-    { id: "restaurant", icon: "🏪", label: "Restaurant" },
-    { id: "delivery", icon: "🚚", label: "Delivery" },
-    { id: "payments", icon: "💳", label: "Payments" },
-    { id: "hours", icon: "🕒", label: "Business Hours" },
-    { id: "social", icon: "🌐", label: "Social" },
-    { id: "account", icon: "🔐", label: "Account" },
+    { id: "restaurant", icon: Store, label: "Restaurant" },
+    { id: "delivery", icon: Truck, label: "Delivery" },
+    { id: "payments", icon: CreditCard, label: "Payments" },
+    { id: "hours", icon: Clock, label: "Business Hours" },
+    { id: "social", icon: Globe, label: "Social" },
+    { id: "account", icon: Lock, label: "Account" },
 ] as const;
 
 type TabId = (typeof TABS)[number]["id"];
@@ -175,7 +184,7 @@ export default function SettingsForm({ settings, adminEmail }: Props) {
             >
                 {TABS.map((tab) => (
                     <option key={tab.id} value={tab.id}>
-                        {tab.icon} {tab.label}
+                        {tab.label}
                         {tabHasUnsavedChanges(tab.id) ? " •" : ""}
                     </option>
                 ))}
@@ -199,7 +208,7 @@ export default function SettingsForm({ settings, adminEmail }: Props) {
                                     }`}
                             >
                                 <span className="flex items-center gap-2.5">
-                                    <span>{tab.icon}</span>
+                                    <tab.icon className="h-4 w-4" strokeWidth={1.9} />
                                     <span>{tab.label}</span>
                                 </span>
 
@@ -414,7 +423,7 @@ export default function SettingsForm({ settings, adminEmail }: Props) {
 
                         <FormSection
                             title="2-Step Verification"
-                            description="Required for all admin accounts before opening the dashboard."
+                            description="Required for the owner account. Optional (but recommended) for other admins."
                         >
                             <MfaPanel mode="settings" />
                         </FormSection>
