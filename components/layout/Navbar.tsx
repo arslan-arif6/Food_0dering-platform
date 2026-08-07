@@ -62,24 +62,39 @@ export default function Navbar({ name, logoUrl }: NavbarProps) {
           }`}
       >
         <nav className="mx-auto flex max-w-7xl items-center justify-between px-4 py-3.5 sm:px-8 sm:py-4">
-          <Link href="/" className="flex min-w-0 items-center gap-2.5">
-            <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sage font-display text-lg font-semibold text-offwhite shadow-soft sm:h-11 sm:w-11">
-              {logoUrl ? (
-                // eslint-disable-next-line @next/next/no-img-element
-                <img
-                  src={logoUrl}
-                  alt={displayName}
-                  className="h-full w-full object-cover"
-                />
+          <div className="flex items-center gap-2">
+            <button
+              aria-label="Toggle menu"
+              aria-expanded={open}
+              onClick={() => setOpen((value) => !value)}
+              className="flex h-11 w-11 items-center justify-center rounded-full text-walnut transition-colors hover:bg-cream lg:hidden"
+            >
+              {open ? (
+                <X className="h-6 w-6" />
               ) : (
-                displayName.charAt(0).toUpperCase()
+                <Menu className="h-6 w-6" />
               )}
-            </span>
+            </button>
 
-            <span className="max-w-[170px] truncate font-display text-lg font-semibold tracking-tight text-walnut xs:max-w-none sm:text-xl">
-              {displayName}
-            </span>
-          </Link>
+            <Link href="/" className="flex min-w-0 items-center gap-2.5">
+              <span className="flex h-10 w-10 shrink-0 items-center justify-center overflow-hidden rounded-full bg-sage font-display text-lg font-semibold text-offwhite shadow-soft sm:h-11 sm:w-11">
+                {logoUrl ? (
+                  // eslint-disable-next-line @next/next/no-img-element
+                  <img
+                    src={logoUrl}
+                    alt={displayName}
+                    className="h-full w-full object-cover"
+                  />
+                ) : (
+                  displayName.charAt(0).toUpperCase()
+                )}
+              </span>
+
+              <span className="max-w-[170px] truncate font-display text-lg font-semibold tracking-tight text-walnut xs:max-w-none sm:text-xl">
+                {displayName}
+              </span>
+            </Link>
+          </div>
 
           <ul className="hidden items-center gap-9 lg:flex">
             {navLinks.map((link) => (
@@ -108,70 +123,58 @@ export default function Navbar({ name, logoUrl }: NavbarProps) {
                 </span>
               )}
             </Link>
-
-            <button
-              aria-label="Toggle menu"
-              aria-expanded={open}
-              onClick={() => setOpen((value) => !value)}
-              className="flex h-11 w-11 items-center justify-center rounded-full text-walnut transition-colors hover:bg-cream lg:hidden"
-            >
-              {open ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </button>
           </div>
         </nav>
       </header>
 
-      {isMounted && createPortal(
-        <div
-          className={`fixed inset-0 top-[68px] z-40 overflow-hidden bg-walnut/35 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"
-            }`}
-          onClick={() => setOpen(false)}
-        >
+      {isMounted &&
+        createPortal(
           <div
-            className={`ml-auto h-full w-[min(88vw,360px)] bg-offwhite px-4 py-5 shadow-soft-lg transition-transform duration-300 ${open ? "translate-x-0" : "translate-x-full"
+            className={`fixed inset-0 top-[68px] z-40 overflow-hidden bg-walnut/35 backdrop-blur-sm transition-opacity duration-300 lg:hidden ${open ? "opacity-100" : "pointer-events-none opacity-0"
               }`}
-            onClick={(e) => e.stopPropagation()}
+            onClick={() => setOpen(false)}
           >
-            <div className="mb-5 rounded-3xl bg-cream/70 p-4">
-              <p className="font-display text-lg font-semibold text-walnut">
-                {displayName}
-              </p>
-              <p className="mt-1 text-sm text-walnut-light">
-                Fresh homemade meals, ready when you are.
-              </p>
-            </div>
-
-            <ul className="flex flex-col gap-2">
-              {navLinks.map((link) => (
-                <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    onClick={() => setOpen(false)}
-                    className="flex min-h-12 items-center gap-3 rounded-2xl px-4 py-3.5 text-base font-semibold text-walnut transition-colors hover:bg-cream"
-                  >
-                    <link.icon className="h-5 w-5 text-sage-dark" strokeWidth={1.9} />
-                    {link.label}
-                  </Link>
-                </li>
-              ))}
-            </ul>
-
-            <Link
-              href="/cart"
-              onClick={() => setOpen(false)}
-              className="mt-6 flex min-h-12 items-center justify-center gap-2 rounded-full bg-sage px-5 py-3 font-semibold text-offwhite shadow-soft transition hover:bg-sage-dark"
+            <div
+              className={`h-full w-[min(88vw,360px)] bg-offwhite px-4 py-5 shadow-soft-lg transition-transform duration-300 ${open ? "translate-x-0" : "-translate-x-full"
+                }`}
+              onClick={(e) => e.stopPropagation()}
             >
-              <ShoppingBag className="h-5 w-5" />
-              View Cart {itemCount > 0 ? `(${itemCount})` : ""}
-            </Link>
-          </div>
-        </div>,
-        document.body
-      )}
+              <div className="mb-5 rounded-3xl bg-cream/70 p-4">
+                <p className="font-display text-lg font-semibold text-walnut">
+                  {displayName}
+                </p>
+                <p className="mt-1 text-sm text-walnut-light">
+                  Fresh homemade meals, ready when you are.
+                </p>
+              </div>
+
+              <ul className="flex flex-col gap-2">
+                {navLinks.map((link) => (
+                  <li key={link.href}>
+                    <Link
+                      href={link.href}
+                      onClick={() => setOpen(false)}
+                      className="flex min-h-12 items-center gap-3 rounded-2xl px-4 py-3.5 text-base font-semibold text-walnut transition-colors hover:bg-cream"
+                    >
+                      <link.icon className="h-5 w-5 text-sage-dark" strokeWidth={1.9} />
+                      {link.label}
+                    </Link>
+                  </li>
+                ))}
+              </ul>
+
+              <Link
+                href="/cart"
+                onClick={() => setOpen(false)}
+                className="mt-6 flex min-h-12 items-center justify-center gap-2 rounded-full bg-sage px-5 py-3 font-semibold text-offwhite shadow-soft transition hover:bg-sage-dark"
+              >
+                <ShoppingBag className="h-5 w-5" />
+                View Cart {itemCount > 0 ? `(${itemCount})` : ""}
+              </Link>
+            </div>
+          </div>,
+          document.body
+        )}
     </>
   );
 }

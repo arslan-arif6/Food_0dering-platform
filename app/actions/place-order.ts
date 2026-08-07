@@ -1,5 +1,6 @@
 "use server";
 
+import { headers } from "next/headers";
 import { z } from "zod";
 
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -16,16 +17,17 @@ import { getRestaurantSettings } from "@/lib/database/settings";
 const placeOrderSchema = z.object({
     customerName: z.string().min(2),
     phone: z.string().min(10),
+
     address: z.string().min(5),
 
     notes: z.string().optional().default(""),
 
-    paymentMethod: z.enum(["cash_on_delivery", "jazzcash", "easypaisa"]),
+    paymentMethod: z.enum([
+        "cash_on_delivery",
+        "jazzcash",
+        "easypaisa",
+    ]),
 
-    // These client-supplied totals are no longer trusted for the actual
-    // insert — the server recalculates everything below from real
-    // dish_variants prices and the real settings row. Kept in the schema
-    // only so the shape still matches what the client already sends.
     subtotal: z.number().nonnegative(),
     deliveryFee: z.number().nonnegative(),
     total: z.number().nonnegative(),
@@ -58,9 +60,96 @@ const PAYMENT_METHOD_FLAG: Record<
 export async function placeOrder(input: PlaceOrderInput) {
     const data = placeOrderSchema.parse(input);
 
+    const supabase = await createSupabaseServerClient();
+
+    const {
+        data: { user },
+    } = await supabase.auth.getUser();
+
+    /*
+     * Rate limiting is intentionally performed early,
+     * before expensive menu/database validation.
+     *
+     * Guest orders are limited by trusted proxy IP.
+     * Phone number provides a second independent protection layer.
+     */
+    const requestHeaders = await headers();
+
+    const forwardedFor = requestHeaders.get("x-forwarded-for");
+    const realIp = requestHeaders.get("x-real-ip");
+
+    const clientIp =
+        forwardedFor?.split(",")[0]?.trim() ||
+        realIp?.trim() ||
+        null;
+
+    /*
+     * If the deployment does not provide a client IP,
+     * do not create a shared "unknown" bucket that could
+     * accidentally block every customer.
+     */
+    if (!user && clientIp) {
+        const serviceSupabase = createServiceRoleClient();
+
+        const ipKey = `order:ip:${clientIp}`;
+
+        const { data: ipAllowed, error: ipRateLimitError } =
+            await serviceSupabase.rpc("check_order_rate_limit", {
+                p_key: ipKey,
+                p_max_requests: 5,
+                p_window_seconds: 600,
+            });
+
+        if (ipRateLimitError) {
+            console.error("IP rate limit check failed:", ipRateLimitError);
+            throw new Error(
+                "Unable to process your order right now. Please try again."
+            );
+        }
+
+        if (!ipAllowed) {
+            throw new Error(
+                "Too many order attempts. Please wait a few minutes before trying again."
+            );
+        }
+
+        const normalizedPhone = data.phone.replace(/\D/g, "");
+
+        const phoneKey = `order:phone:${normalizedPhone}`;
+
+        const { data: phoneAllowed, error: phoneRateLimitError } =
+            await serviceSupabase.rpc("check_order_rate_limit", {
+                p_key: phoneKey,
+                p_max_requests: 3,
+                p_window_seconds: 600,
+            });
+
+        if (phoneRateLimitError) {
+            console.error(
+                "Phone rate limit check failed:",
+                phoneRateLimitError
+            );
+
+            throw new Error(
+                "Unable to process your order right now. Please try again."
+            );
+        }
+
+        if (!phoneAllowed) {
+            throw new Error(
+                "Too many orders from this phone number. Please wait a few minutes before trying again."
+            );
+        }
+    }
+
     const settings = await getRestaurantSettings();
+
     const scheduleConfig = settingsToScheduleConfig(settings);
-    const availability = getRestaurantAvailability(new Date(), scheduleConfig);
+
+    const availability = getRestaurantAvailability(
+        new Date(),
+        scheduleConfig
+    );
 
     if (!availability.isOpen) {
         throw new Error(availability.message);
@@ -68,6 +157,7 @@ export async function placeOrder(input: PlaceOrderInput) {
 
     if (settings) {
         const flag = PAYMENT_METHOD_FLAG[data.paymentMethod];
+
         if (!settings[flag]) {
             throw new Error(
                 "This payment method is currently unavailable. Please choose another."
@@ -75,20 +165,10 @@ export async function placeOrder(input: PlaceOrderInput) {
         }
     }
 
-    const supabase = await createSupabaseServerClient();
-    const {
-        data: { user },
-        error: authError,
-    } = await supabase.auth.getUser();
-
-    console.log("=== ORDER AUTH DEBUG ===");
-    console.log("User ID:", user?.id ?? null);
-    console.log("User email:", user?.email ?? null);
-    console.log("Auth error:", authError);
-    console.log("========================");
-
-    // Re-derive every item's real price and validate availability —
-    // never trust unitPrice/subtotal/total from the client.
+    /*
+     * Re-derive every item's real price and validate availability.
+     * Never trust client-supplied price values.
+     */
     const verifiedItems: {
         dishId: string;
         variantId: string | null;
@@ -144,12 +224,15 @@ export async function placeOrder(input: PlaceOrderInput) {
 
         if (!canOrderDish(categories, scheduleConfig)) {
             throw new Error(
-                `${item.dishName} is not available during ${availability.currentMeal ?? "this"} time. Please order available dishes only.`
+                `${item.dishName} is not available during ${availability.currentMeal ?? "this"
+                } time. Please order available dishes only.`
             );
         }
 
         const variant = item.variantId
-            ? dish.dish_variants.find((v: any) => v.id === item.variantId)
+            ? dish.dish_variants.find(
+                (v: any) => v.id === item.variantId
+            )
             : dish.dish_variants[0];
 
         if (!variant) {
@@ -171,7 +254,10 @@ export async function placeOrder(input: PlaceOrderInput) {
         });
     }
 
-    const subtotal = verifiedItems.reduce((sum, item) => sum + item.lineTotal, 0);
+    const subtotal = verifiedItems.reduce(
+        (sum, item) => sum + item.lineTotal,
+        0
+    );
 
     const deliveryFee =
         settings?.free_delivery_threshold != null &&
@@ -183,9 +269,10 @@ export async function placeOrder(input: PlaceOrderInput) {
 
     const paymentMethod: PaymentMethod = data.paymentMethod;
 
-    // IMPORTANT:
-    // Use service-role client ONLY on the server to call the protected
-    // atomic RPC. Never expose SUPABASE_SERVICE_ROLE_KEY to the browser.
+    /*
+     * Service-role client is server-only.
+     * It is used only for the protected atomic RPC.
+     */
     const serviceSupabase = createServiceRoleClient();
 
     const orderItems = verifiedItems.map((item) => ({
@@ -212,11 +299,10 @@ export async function placeOrder(input: PlaceOrderInput) {
         });
 
     if (orderError || !orderId) {
-        console.error("========== ORDER ERROR ==========");
-        console.error(orderError);
-        console.error("===============================");
-
-        throw new Error("Unable to create order. Please try again.");
+        console.error("Order creation failed:", orderError);
+        throw new Error(
+            "Unable to create order. Please try again."
+        );
     }
 
     return {
