@@ -46,11 +46,11 @@ export default function ResetPasswordForm() {
             }
         });
 
-        // Fallback in case the event already fired before this mounted.
+
         checkSession();
 
         return () => sub.subscription.unsubscribe();
-        // eslint-disable-next-line react-hooks/exhaustive-deps
+
     }, []);
 
     function verifyMfa() {

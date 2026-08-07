@@ -49,6 +49,7 @@ export async function createDishAction(
     }
 
     try {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { image, ...rest } = parsed.data;
         await createDish({ ...rest, imageUrl: uploadResult.url });
     } catch (error) {

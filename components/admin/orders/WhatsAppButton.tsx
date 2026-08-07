@@ -4,7 +4,7 @@ import { useTransition } from "react";
 import { useRouter } from "next/navigation";
 import { MessageCircle } from "lucide-react";
 
-import type { DatabaseOrder, OrderStatus } from "@/lib/database/orders";
+import type { DatabaseOrder } from "@/lib/database/orders";
 import { updateOrderStatusAction } from "@/app/actions/update-order-status";
 
 type OrderForWhatsApp = Pick<DatabaseOrder, "id" | "customerName" | "phone" | "status" | "address" | "total">;

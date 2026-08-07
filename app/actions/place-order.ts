@@ -219,7 +219,7 @@ export async function placeOrder(input: PlaceOrderInput) {
         }
 
         const categories = dish.dish_categories.map(
-            (entry: any) => entry.categories.slug
+            (entry: { categories: { slug: string }[] }) => entry.categories[0]?.slug
         );
 
         if (!canOrderDish(categories, scheduleConfig)) {
@@ -231,7 +231,7 @@ export async function placeOrder(input: PlaceOrderInput) {
 
         const variant = item.variantId
             ? dish.dish_variants.find(
-                (v: any) => v.id === item.variantId
+                (v: { id: string }) => v.id === item.variantId
             )
             : dish.dish_variants[0];
 

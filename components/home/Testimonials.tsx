@@ -10,7 +10,7 @@ export default function Testimonials() {
             Customer Reviews
           </p>
           <h2 className="mt-3 font-display text-3xl font-semibold text-offwhite sm:text-4xl">
-            Loved like it's made at home
+            Loved like it&apos;s made at home
           </h2>
         </div>
 
@@ -54,7 +54,7 @@ function TestimonialCard({
     >
       <Quote className="h-6 w-6 text-sage-light sm:h-7 sm:w-7" strokeWidth={1.5} />
       <p className="mt-4 text-sm leading-relaxed text-offwhite/90 sm:text-[15px]">
-        "{testimonial.quote}"
+        &quot;{testimonial.quote}&quot;
       </p>
       <div className="mt-5 flex items-center justify-between">
         <div>

@@ -28,7 +28,7 @@ export default async function Categories() {
           </p>
 
           <h2 className="mt-3 font-display text-2xl font-semibold leading-tight text-walnut sm:text-4xl">
-            Whatever time it is, there's a plate for it
+            Whatever time it is, there&apos;s a plate for it
           </h2>
         </div>
 

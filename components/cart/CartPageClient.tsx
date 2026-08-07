@@ -52,7 +52,7 @@ export default function CartPageClient({ settings }: Props) {
                     </h1>
 
                     <p className="mt-4 max-w-md leading-7 text-walnut-light">
-                        Looks like you haven't added any delicious homemade meals yet.
+                        Looks like you haven&apos;t added any delicious homemade meals yet.
                         Explore our menu and start building your order.
                     </p>
 

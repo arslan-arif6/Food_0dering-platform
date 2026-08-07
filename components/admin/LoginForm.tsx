@@ -44,7 +44,7 @@ export default function LoginForm() {
         if (!forgotEmail.trim()) return;
 
         setForgotSending(true);
-        const { error } = await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
+        await supabase.auth.resetPasswordForEmail(forgotEmail.trim(), {
             redirectTo: `${window.location.origin}/admin/set-password`,
         });
         setForgotSending(false);

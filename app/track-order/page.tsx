@@ -79,7 +79,7 @@ export default async function TrackOrderPage({
                         </h2>
 
                         <p className="mt-3 text-walnut-light">
-                            We couldn't find an order with that ID.
+                            We couldn&apos;t find an order with that ID.
                         </p>
                     </div>
                 )}
@@ -161,7 +161,13 @@ export default async function TrackOrderPage({
 
                             <div className="mt-6 space-y-4">
 
-                                {order.order_items.map((item: any) => (
+                                {order.order_items.map((item: {
+                                    id: string;
+                                    dish_name: string;
+                                    variant_name: string;
+                                    quantity: number;
+                                    line_total: number;
+                                }) => (
                                     <div
                                         key={item.id}
                                         className="flex items-start justify-between gap-3 rounded-2xl border border-cream p-4"
