@@ -19,24 +19,48 @@ const figtree = Figtree({
 
 const siteName = "Home Made Food";
 const siteDescription =
-  "Home Made Food delivers fresh, homemade meals made with love, straight to your door. Breakfast, lunch, dinner and desserts cooked the way home should taste.";
+  "Fresh homemade food delivered to your door. Enjoy delicious breakfast, lunch and dinner, prepared with the taste of home.";
 
 export const metadata: Metadata = {
-  title: `${siteName} | Fresh Homemade Meals Delivered`,
+  metadataBase: new URL("https://food-0dering-platform.vercel.app"),
+
+  title: {
+    default: `${siteName} | Fresh Homemade Food`,
+    template: `%s | ${siteName}`,
+  },
+
   description: siteDescription,
+
+  keywords: [
+    "homemade food",
+    "home made food",
+    "homemade food delivery",
+    "fresh homemade meals",
+    "breakfast",
+    "lunch",
+    "dinner",
+  ],
+
   openGraph: {
-    title: `${siteName} | Fresh Homemade Meals Delivered`,
+    title: `${siteName} | Fresh Homemade Food`,
     description: siteDescription,
     siteName,
     type: "website",
+    locale: "en_PK",
+    url: "https://food-0dering-platform.vercel.app",
   },
+
   twitter: {
     card: "summary_large_image",
-    title: `${siteName} | Fresh Homemade Meals Delivered`,
+    title: `${siteName} | Fresh Homemade Food`,
     description: siteDescription,
   },
-};
 
+  robots: {
+    index: true,
+    follow: true,
+  },
+};
 export default function RootLayout({
   children,
 }: {
