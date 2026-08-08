@@ -9,19 +9,20 @@ import RecentOrdersList from "@/components/track-order/RecentOrdersList";
 type PageProps = {
     searchParams: Promise<{
         id?: string;
+        phone?: string;
     }>;
 };
 
 export default async function TrackOrderPage({
     searchParams,
 }: PageProps) {
-    const { id } = await searchParams;
+    const { id, phone } = await searchParams;
 
-    const order = id ? await getOrder(id) : null;
+    const order = id && phone ? await getOrder(id, phone) : null;
 
     return (
         <main className="min-h-screen bg-cream">
-            <TrackOrderAutoLoad hasId={Boolean(id)} />
+            <TrackOrderAutoLoad hasId={Boolean(id && phone)} />
             {order && <OrderStatusPoller />}
 
             <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6 sm:py-20">
@@ -30,7 +31,7 @@ export default async function TrackOrderPage({
                 </h1>
 
                 <p className="mt-4 text-[15px] leading-7 text-walnut-light sm:text-lg">
-                    Enter your Order ID to check the latest status.
+                    Enter your Order ID and phone number to check the latest status.
                 </p>
 
                 <form
@@ -42,6 +43,16 @@ export default async function TrackOrderPage({
                         name="id"
                         defaultValue={id ?? ""}
                         placeholder="Enter Order ID"
+                        autoComplete="off"
+                        className="min-h-14 flex-1 rounded-2xl border border-sage/30 bg-white px-5 py-4 outline-none transition focus:border-sage"
+                    />
+
+                    <input
+                        name="phone"
+                        type="tel"
+                        defaultValue={phone ?? ""}
+                        placeholder="Phone Number"
+                        autoComplete="tel"
                         className="min-h-14 flex-1 rounded-2xl border border-sage/30 bg-white px-5 py-4 outline-none transition focus:border-sage"
                     />
 
@@ -79,7 +90,7 @@ export default async function TrackOrderPage({
                         </h2>
 
                         <p className="mt-3 text-walnut-light">
-                            We couldn&apos;t find an order with that ID.
+                            We couldn&apos;t find an order matching that ID and phone number.
                         </p>
                     </div>
                 )}

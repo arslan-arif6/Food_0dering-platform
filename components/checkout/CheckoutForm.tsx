@@ -161,7 +161,7 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
                 })),
             });
 
-            saveRecentOrderId(result.orderId);
+            saveRecentOrderId(result.orderId, data.phone);
 
             clearCart();
 
