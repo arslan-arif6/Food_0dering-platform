@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-
+import { requireAdmin } from "@/lib/supabase/admin-auth";
 import {
     createCategory,
     updateCategory,
@@ -29,6 +29,7 @@ export async function createCategoryAction(
     }
 
     try {
+        await requireAdmin();
         await createCategory(value);
 
         revalidatePath("/admin/categories");
@@ -61,6 +62,7 @@ export async function updateCategoryAction(
     }
 
     try {
+        await requireAdmin();
         await updateCategory(id, value);
 
         revalidatePath("/admin/categories");
@@ -82,6 +84,7 @@ export async function deleteCategoryAction(
     id: string
 ): Promise<CategoryActionResult> {
     try {
+        await requireAdmin();
         await deleteCategory(id);
 
         revalidatePath("/admin/categories");

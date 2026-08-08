@@ -115,3 +115,28 @@ export async function getAdminAuthState(): Promise<AdminAuthState> {
         mfaRequired: await resolveMfaRequired(supabase, admin.role as AdminRole),
     };
 }
+/**
+ * Defense-in-depth guard for admin Server Actions.
+ *
+ * RLS (`is_admin()`) already blocks non-admins at the database layer,
+ * so this is a second, independent check inside the action itself —
+ * if RLS is ever misconfigured or bypassed via a different code path,
+ * mutations are still blocked here first.
+ *
+ * Throws on any non-authorized state; callers already wrap their body
+ * in try/catch and return a generic failure, so this fits the existing
+ * error-handling pattern without any restructuring.
+ */
+export async function requireAdmin(): Promise<CurrentAdmin> {
+    const state = await getAdminAuthState();
+
+    if (state.status !== "authorized") {
+        throw new Error("Not authorized.");
+    }
+
+    if (state.mfaRequired) {
+        throw new Error("MFA verification required.");
+    }
+
+    return state.admin;
+}

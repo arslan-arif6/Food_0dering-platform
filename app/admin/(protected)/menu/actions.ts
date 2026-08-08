@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-
+import { requireAdmin } from "@/lib/supabase/admin-auth";
 import { deleteDish } from "@/lib/database/dishes";
 import {
     deleteDishImage,
@@ -13,6 +13,7 @@ export async function deleteDishAction(
     imageUrl: string
 ): Promise<{ success: boolean; error?: string }> {
     try {
+        await requireAdmin();
         await deleteDish(dishId);
 
         if (imageUrl) {

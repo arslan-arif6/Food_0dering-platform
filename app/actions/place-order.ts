@@ -218,8 +218,9 @@ export async function placeOrder(input: PlaceOrderInput) {
             );
         }
 
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const categories = dish.dish_categories.map(
-            (entry: { categories: { slug: string }[] }) => entry.categories[0]?.slug
+            (entry: any) => entry.categories.slug
         );
 
         if (!canOrderDish(categories, scheduleConfig)) {

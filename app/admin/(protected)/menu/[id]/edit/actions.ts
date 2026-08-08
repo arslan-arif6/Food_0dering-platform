@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
+import { requireAdmin } from "@/lib/supabase/admin-auth";
 import {
     parseEditDishFields,
     type DishFormValues,
@@ -21,6 +21,11 @@ export async function updateDishAction(
     currentImageUrl: string,
     values: DishFormSubmitValues
 ): Promise<CreateDishResult> {
+    try {
+        await requireAdmin();
+    } catch {
+        return { success: false, formError: "Not authorized." };
+    }
     const parsed = parseEditDishFields(values);
 
     if (!parsed.success) {

@@ -1,7 +1,7 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-
+import { requireAdmin } from "@/lib/supabase/admin-auth";
 import { settingsFormSchema } from "@/lib/validations/settings";
 import { updateRestaurantSettings } from "@/lib/database/settings";
 import {
@@ -20,6 +20,11 @@ export async function updateSettingsAction(
     formData: FormData,
     currentLogoUrl: string | null
 ): Promise<UpdateSettingsResult> {
+    try {
+        await requireAdmin();
+    } catch {
+        return { success: false, error: "Not authorized." };
+    }
     const raw = Object.fromEntries(formData.entries());
     const logoValue = formData.get("logo");
 
