@@ -34,6 +34,7 @@ type DishFormInitialValues = {
     categoryIds: string[];
     variants: { name: string; price: string }[];
     available: boolean;
+    soldOut: boolean;
     featured: boolean;
 };
 
@@ -105,6 +106,7 @@ export default function DishForm({
                 categoryIds: [],
                 variants: [{ name: "", price: "" }],
                 available: true,
+                soldOut: false,
                 featured: false,
                 image: undefined,
             },
@@ -117,6 +119,7 @@ export default function DishForm({
 
     const selectedCategoryIds = watch("categoryIds");
     const available = watch("available");
+    const soldOut = watch("soldOut");
     const featured = watch("featured");
 
     const atMaxVariants = fields.length >= MAX_VARIANTS;
@@ -311,6 +314,13 @@ export default function DishForm({
                         description="Show this dish as orderable on the public menu."
                         checked={available}
                         onChange={(checked) => setValue("available", checked)}
+                    />
+                    <SwitchField
+                        id="dish-sold-out"
+                        label="Sold Out"
+                        description="Temporarily hide from ordering while still showing on the menu (e.g. ran out mid-day). Dish stays visible to customers, marked as sold out."
+                        checked={soldOut}
+                        onChange={(checked) => setValue("soldOut", checked)}
                     />
                     <SwitchField
                         id="dish-featured"

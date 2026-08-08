@@ -4,7 +4,8 @@ import { useRouter } from "next/navigation";
 import { useCart } from "@/components/cart/CartProvider";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { getRestaurantAvailability } from "@/lib/restaurant";
+import { getRestaurantAvailability, settingsToScheduleConfig } from "@/lib/restaurant";
+import type { RestaurantSettings } from "@/lib/database/settings";
 
 import {
     checkoutSchema,
@@ -27,9 +28,13 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
-export default function CheckoutForm() {
+type CheckoutFormProps = {
+    settings: RestaurantSettings | null;
+};
+
+export default function CheckoutForm({ settings }: CheckoutFormProps) {
     const {
         cart,
         totalPrice,
@@ -37,10 +42,22 @@ export default function CheckoutForm() {
         removeMultipleItems,
     } = useCart();
 
+    const scheduleConfig = settingsToScheduleConfig(settings);
+
+    const paymentOptions = [
+        { value: "COD" as const, label: "Cash on Delivery", enabled: settings?.payment_cod ?? true },
+        { value: "JazzCash" as const, label: "JazzCash", enabled: settings?.payment_jazzcash ?? false },
+        { value: "EasyPaisa" as const, label: "Easypaisa", enabled: settings?.payment_easypaisa ?? false },
+    ].filter((option) => option.enabled);
+
+    const defaultPaymentMethod = paymentOptions[0]?.value ?? "COD";
+    const serviceAreas = settings?.service_areas ?? [];
+
     const {
         register,
         handleSubmit,
         watch,
+        reset,
         formState: { errors, isSubmitting },
     } = useForm<CheckoutFormData>({
         resolver: zodResolver(checkoutSchema),
@@ -49,19 +66,95 @@ export default function CheckoutForm() {
             phone: "",
             area: "",
             address: "",
-            paymentMethod: "COD",
+            paymentMethod: defaultPaymentMethod,
             notes: "",
         },
     });
 
+    const [isHydrated, setIsHydrated] = useState(false);
+
+    // Restore saved customer details after the initial client render.
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem("kitchenhub-checkout-details");
+
+            if (saved) {
+                const details = JSON.parse(saved);
+
+                if (typeof details === "object" && details !== null) {
+                    reset({
+                        fullName:
+                            typeof details.fullName === "string"
+                                ? details.fullName
+                                : "",
+                        phone:
+                            typeof details.phone === "string"
+                                ? details.phone
+                                : "",
+                        area:
+                            typeof details.area === "string"
+                                ? details.area
+                                : "",
+                        address:
+                            typeof details.address === "string"
+                                ? details.address
+                                : "",
+                        paymentMethod: defaultPaymentMethod,
+                        notes:
+                            typeof details.notes === "string"
+                                ? details.notes
+                                : "",
+                    });
+                }
+            }
+        } catch {
+            // Invalid localStorage data should never break checkout.
+        } finally {
+            setIsHydrated(true);
+        }
+    }, [reset, defaultPaymentMethod]);
+
     const payment = watch("paymentMethod");
+
+    const fullName = watch("fullName");
+    const phone = watch("phone");
+    const area = watch("area");
+    const address = watch("address");
+    const notes = watch("notes");
+
+    useEffect(() => {
+        if (!isHydrated) return;
+
+        try {
+            localStorage.setItem(
+                "kitchenhub-checkout-details",
+                JSON.stringify({
+                    fullName,
+                    phone,
+                    area,
+                    address,
+                    notes,
+                })
+            );
+        } catch {
+            // Checkout must continue even if localStorage is unavailable.
+        }
+    }, [fullName, phone, area, address, notes, isHydrated]);
 
     const router = useRouter();
 
     const [checkoutError, setCheckoutError] = useState("");
 
-    const availability = getRestaurantAvailability();
-    console.log("Availability:", availability);
+    const availability = getRestaurantAvailability(new Date(), scheduleConfig);
+
+    const minimumOrder = settings?.minimum_order ?? 0;
+    const belowMinimum = minimumOrder > 0 && totalPrice < minimumOrder;
+
+    const deliveryFee =
+        settings?.free_delivery_threshold != null &&
+            totalPrice >= settings.free_delivery_threshold
+            ? 0
+            : settings?.delivery_fee ?? 0;
 
     const unavailableItems = useMemo(() => {
         if (!availability.currentMeal) {
@@ -69,10 +162,7 @@ export default function CheckoutForm() {
         }
         const currentMeal = availability.currentMeal;
 
-        return cart.filter(
-            (item) =>
-                !item.categories.includes(currentMeal)
-        );
+        return cart.filter((item) => !item.categories.includes(currentMeal));
     }, [cart, availability.currentMeal]);
 
     if (!availability.isOpen) {
@@ -82,9 +172,7 @@ export default function CheckoutForm() {
                     Restaurant Closed
                 </h2>
 
-                <p className="mt-4 text-red-600">
-                    {availability.message}
-                </p>
+                <p className="mt-4 text-red-600">{availability.message}</p>
             </div>
         );
     }
@@ -92,7 +180,7 @@ export default function CheckoutForm() {
     async function onSubmit(data: CheckoutFormData) {
         setCheckoutError("");
 
-        const latestAvailability = getRestaurantAvailability();
+        const latestAvailability = getRestaurantAvailability(new Date(), scheduleConfig);
 
         if (!latestAvailability.isOpen) {
             setCheckoutError(latestAvailability.message);
@@ -101,9 +189,12 @@ export default function CheckoutForm() {
         }
 
         if (unavailableItems.length > 0) {
-            toast.error(
-                "Remove unavailable dishes before placing your order."
-            );
+            toast.error("Remove unavailable dishes before placing your order.");
+            return;
+        }
+
+        if (belowMinimum) {
+            toast.error(`Minimum order is Rs. ${minimumOrder}.`);
             return;
         }
 
@@ -126,8 +217,8 @@ export default function CheckoutForm() {
                 paymentMethod,
 
                 subtotal: totalPrice,
-                deliveryFee: 0,
-                total: totalPrice,
+                deliveryFee,
+                total: totalPrice + deliveryFee,
 
                 items: cart.map((item) => ({
                     dishId: item.id,
@@ -139,28 +230,22 @@ export default function CheckoutForm() {
                 })),
             });
 
-            saveRecentOrderId(result.orderId);
+            saveRecentOrderId(result.orderId, data.phone);
 
             clearCart();
 
             router.push(`/order-success?id=${result.orderId}`);
         } catch (error) {
             const message =
-                error instanceof Error
-                    ? error.message
-                    : "Unable to place order.";
+                error instanceof Error ? error.message : "Unable to place order.";
 
             setCheckoutError(message);
-
             toast.error(message);
         }
     }
 
     return (
-        <form
-            onSubmit={handleSubmit(onSubmit)}
-            className="space-y-8"
-        >
+        <form onSubmit={handleSubmit(onSubmit)} className="space-y-5 sm:space-y-8">
             {unavailableItems.length > 0 && (
                 <UnavailableItemsBanner
                     items={unavailableItems}
@@ -180,12 +265,12 @@ export default function CheckoutForm() {
 
             {/* Customer Information */}
 
-            <section className="rounded-3xl bg-white p-8 shadow-soft">
-                <h2 className="font-display text-3xl font-semibold text-walnut">
+            <section className="rounded-3xl bg-white p-5 shadow-soft sm:p-8">
+                <h2 className="font-display text-2xl font-semibold text-walnut sm:text-3xl">
                     Customer Information
                 </h2>
 
-                <div className="mt-8 space-y-6">
+                <div className="mt-6 space-y-5 sm:mt-8 sm:space-y-6">
                     <div>
                         <label className="mb-2 flex items-center gap-2 font-medium">
                             <User className="h-5 w-5 text-sage" />
@@ -195,7 +280,7 @@ export default function CheckoutForm() {
                         <input
                             {...register("fullName")}
                             placeholder="Muhammad Ali"
-                            className="w-full rounded-xl border p-3 outline-none transition focus:border-sage"
+                            className="min-h-12 w-full rounded-xl border px-4 py-3 outline-none transition focus:border-sage"
                         />
 
                         {errors.fullName && (
@@ -214,7 +299,7 @@ export default function CheckoutForm() {
                         <input
                             {...register("phone")}
                             placeholder="03XXXXXXXXX"
-                            className="w-full rounded-xl border p-3 outline-none transition focus:border-sage"
+                            className="min-h-12 w-full rounded-xl border px-4 py-3 outline-none transition focus:border-sage"
                         />
 
                         {errors.phone && (
@@ -228,12 +313,12 @@ export default function CheckoutForm() {
 
             {/* Delivery Information */}
 
-            <section className="rounded-3xl bg-white p-8 shadow-soft">
-                <h2 className="font-display text-3xl font-semibold text-walnut">
+            <section className="rounded-3xl bg-white p-5 shadow-soft sm:p-8">
+                <h2 className="font-display text-2xl font-semibold text-walnut sm:text-3xl">
                     Delivery Information
                 </h2>
 
-                <div className="mt-8 space-y-6">
+                <div className="mt-6 space-y-5 sm:mt-8 sm:space-y-6">
                     <div>
                         <label className="mb-2 flex items-center gap-2 font-medium">
                             <MapPin className="h-5 w-5 text-sage" />
@@ -242,14 +327,20 @@ export default function CheckoutForm() {
 
                         <select
                             {...register("area")}
-                            className="w-full rounded-xl border p-3 outline-none focus:border-sage"
+                            className="min-h-12 w-full rounded-xl border px-4 py-3 outline-none focus:border-sage"
                         >
                             <option value="">Select Area</option>
-                            <option value="University Chowk">University Chowk</option>
-                            <option value="Commercial Area">Commercial Area</option>
-                            <option value="Riaz Colony">Riaz Colony</option>
-                            <option value="Faisal Colony">Faisal Colony</option>
-                            <option value="One Unit">One Unit</option>
+                            {serviceAreas.length === 0 ? (
+                                <option value="" disabled>
+                                    No delivery areas configured
+                                </option>
+                            ) : (
+                                serviceAreas.map((area) => (
+                                    <option key={area} value={area}>
+                                        {area}
+                                    </option>
+                                ))
+                            )}
                         </select>
 
                         {errors.area && (
@@ -260,15 +351,13 @@ export default function CheckoutForm() {
                     </div>
 
                     <div>
-                        <label className="mb-2 block font-medium">
-                            Complete Address
-                        </label>
+                        <label className="mb-2 block font-medium">Complete Address</label>
 
                         <textarea
                             {...register("address")}
                             rows={4}
                             placeholder="House Number, Street, Landmark..."
-                            className="w-full rounded-xl border p-3 outline-none focus:border-sage"
+                            className="w-full rounded-xl border px-4 py-3 outline-none focus:border-sage"
                         />
 
                         {errors.address && (
@@ -282,17 +371,17 @@ export default function CheckoutForm() {
 
             {/* Payment */}
 
-            <section className="rounded-3xl bg-white p-8 shadow-soft">
-                <h2 className="flex items-center gap-2 font-display text-3xl font-semibold text-walnut">
+            <section className="rounded-3xl bg-white p-5 shadow-soft sm:p-8">
+                <h2 className="flex items-center gap-2 font-display text-2xl font-semibold text-walnut sm:text-3xl">
                     <CreditCard className="h-7 w-7 text-sage" />
                     Payment Method
                 </h2>
 
                 <div className="mt-6 space-y-3">
-                    {["COD", "JazzCash", "EasyPaisa"].map((method) => (
+                    {paymentOptions.map((option) => (
                         <label
-                            key={method}
-                            className={`flex cursor-pointer items-center gap-4 rounded-2xl border p-4 transition ${payment === method
+                            key={option.value}
+                            className={`flex min-h-14 cursor-pointer items-center gap-4 rounded-2xl border p-4 transition ${payment === option.value
                                 ? "border-sage bg-sage/10"
                                 : "border-gray-200"
                                 }`}
@@ -300,14 +389,10 @@ export default function CheckoutForm() {
                             <input
                                 {...register("paymentMethod")}
                                 type="radio"
-                                value={method}
+                                value={option.value}
                             />
 
-                            <span className="font-medium">
-                                {method === "COD"
-                                    ? "Cash on Delivery"
-                                    : method}
-                            </span>
+                            <span className="font-medium">{option.label}</span>
                         </label>
                     ))}
                 </div>
@@ -315,7 +400,7 @@ export default function CheckoutForm() {
 
             {/* Additional Notes */}
 
-            <section className="rounded-3xl bg-white p-8 shadow-soft">
+            <section className="rounded-3xl bg-white p-5 shadow-soft sm:p-8">
                 <h2 className="font-display text-2xl font-semibold text-walnut">
                     Additional Notes
                 </h2>
@@ -328,63 +413,71 @@ export default function CheckoutForm() {
                 />
             </section>
 
-            {/* Delivery Information */}
+            {/* Delivery Information Summary */}
 
-            <section className="rounded-3xl bg-sage p-8 text-offwhite shadow-soft-lg">
+            <section className="rounded-3xl bg-sage p-5 text-offwhite shadow-soft-lg sm:p-8">
                 <h2 className="font-display text-2xl font-semibold">
                     Delivery Information
                 </h2>
 
-                <div className="mt-6 space-y-4 text-sm">
+                <div className="mt-5 space-y-4 text-sm sm:mt-6">
                     <div className="flex items-center gap-3">
                         <Clock className="h-5 w-5" />
-                        <span>Food preparation: 20–30 minutes</span>
+                        <span>Estimated delivery: {settings?.estimated_delivery_time ?? "30-45 mins"}</span>
                     </div>
 
                     <div className="flex items-center gap-3">
                         <Truck className="h-5 w-5" />
-                        <span>Delivery: 30–45 minutes</span>
+                        <span>
+                            {deliveryFee === 0
+                                ? "Free delivery on this order"
+                                : `Delivery fee: Rs. ${deliveryFee}`}
+                        </span>
                     </div>
 
-                    <div>✅ Free delivery in all service areas</div>
-
-                    <div>
-                        📞 Need help? Call us
-                        <br />
-                        <strong>+92 303 7847383</strong>
-                    </div>
+                    {settings?.phone && (
+                        <div>
+                            📞 Need help? Call us
+                            <br />
+                            <strong>{settings.phone}</strong>
+                        </div>
+                    )}
                 </div>
             </section>
+
+            {belowMinimum && (
+                <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
+                    <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
+                    <p className="text-sm">
+                        Minimum order is Rs. {minimumOrder}. Add more items to continue.
+                    </p>
+                </div>
+            )}
 
             {checkoutError && (
                 <div className="flex items-start gap-3 rounded-2xl border border-red-200 bg-red-50 p-4 text-red-700">
                     <AlertCircle className="mt-0.5 h-5 w-5 shrink-0" />
 
                     <div>
-                        <p className="font-semibold">
-                            Unable to place order
-                        </p>
+                        <p className="font-semibold">Unable to place order</p>
 
-                        <p className="text-sm">
-                            {checkoutError}
-                        </p>
+                        <p className="text-sm">{checkoutError}</p>
                     </div>
                 </div>
             )}
 
             <button
                 type="submit"
-                disabled={
-                    isSubmitting ||
-                    unavailableItems.length > 0
-                }
-                className="w-full rounded-2xl bg-sage py-4 text-lg font-semibold text-white transition hover:bg-sage-dark disabled:cursor-not-allowed disabled:opacity-50"
+                disabled={isSubmitting || unavailableItems.length > 0 || belowMinimum}
+                className="min-h-14 w-full rounded-2xl bg-sage py-4 text-base font-semibold text-white transition hover:bg-sage-dark disabled:cursor-not-allowed disabled:opacity-50 sm:text-lg"
             >
                 {isSubmitting
                     ? "Placing Order..."
                     : unavailableItems.length > 0
                         ? "Remove Unavailable Items"
-                        : "Place Order"}
+                        : belowMinimum
+                            ? "Below Minimum Order"
+                            : "Place Order"}
             </button>
         </form>
     );

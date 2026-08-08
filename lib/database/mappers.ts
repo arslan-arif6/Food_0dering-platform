@@ -1,5 +1,6 @@
 import type { DatabaseDish, DatabaseDishVariant } from "./dishes";
 
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 export function mapDish(databaseDish: any): DatabaseDish {
     const variants: DatabaseDishVariant[] = [];
 
@@ -30,6 +31,7 @@ export function mapDish(databaseDish: any): DatabaseDish {
         image: databaseDish.image,
         featured: databaseDish.featured,
         available: databaseDish.available,
+        soldOut: databaseDish.sold_out ?? false,
         tag: databaseDish.tag ?? undefined,
         categories,
         variants,

@@ -30,9 +30,9 @@ export default function CartItem({
     removeItem,
 }: Props) {
     return (
-        <div className="flex gap-5 rounded-3xl bg-white p-5 shadow-soft">
+        <div className="flex gap-3 rounded-3xl bg-white p-3 shadow-soft sm:gap-5 sm:p-5">
 
-            <div className="relative h-24 w-24 overflow-hidden rounded-2xl">
+            <div className="relative h-24 w-24 shrink-0 overflow-hidden rounded-2xl sm:h-28 sm:w-28">
 
                 <Image
                     src={item.image}
@@ -45,7 +45,7 @@ export default function CartItem({
 
             <div className="flex flex-1 flex-col">
 
-                <h3 className="font-display text-xl font-semibold text-walnut">
+                <h3 className="line-clamp-2 font-display text-lg font-semibold leading-tight text-walnut sm:text-xl">
                     {item.name}
                 </h3>
 
@@ -57,18 +57,19 @@ export default function CartItem({
                     Rs. {item.price}
                 </p>
 
-                <div className="mt-5 flex items-center justify-between">
+                <div className="mt-4 flex flex-wrap items-center justify-between gap-3 sm:mt-5">
 
-                    <div className="flex items-center gap-3">
+                    <div className="flex items-center gap-2 rounded-full bg-cream/70 p-1">
 
                         <button
+                            type="button"
                             onClick={() =>
                                 decreaseQuantity(
                                     item.id,
                                     item.variantId
                                 )
                             }
-                            className="rounded-lg border border-walnut/10 p-2 hover:bg-cream"
+                            className="flex h-10 w-10 items-center justify-center rounded-full bg-offwhite text-walnut shadow-sm hover:bg-cream sm:h-11 sm:w-11"
                         >
                             <Minus className="h-4 w-4" />
                         </button>
@@ -78,13 +79,14 @@ export default function CartItem({
                         </span>
 
                         <button
+                            type="button"
                             onClick={() =>
                                 increaseQuantity(
                                     item.id,
                                     item.variantId
                                 )
                             }
-                            className="rounded-lg border border-walnut/10 p-2 hover:bg-cream"
+                            className="flex h-10 w-10 items-center justify-center rounded-full bg-offwhite text-walnut shadow-sm hover:bg-cream sm:h-11 sm:w-11"
                         >
                             <Plus className="h-4 w-4" />
                         </button>
@@ -92,13 +94,14 @@ export default function CartItem({
                     </div>
 
                     <button
+                        type="button"
                         onClick={() =>
                             removeItem(
                                 item.id,
                                 item.variantId
                             )
                         }
-                        className="text-red-500 transition hover:text-red-700"
+                        className="flex h-11 w-11 items-center justify-center rounded-full text-red-500 transition hover:bg-red-50 hover:text-red-700"
                     >
                         <Trash2 className="h-5 w-5" />
                     </button>

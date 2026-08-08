@@ -3,8 +3,7 @@ import { Plus } from "lucide-react";
 
 import { getAdminDishes } from "@/lib/database/dishes";
 import { getCategories } from "@/lib/database/categories";
-import MenuToolbar from "@/components/admin/menu/MenuToolbar";
-import DishManagementCard from "@/components/admin/menu/DishManagementCard";
+import MenuList from "@/components/admin/menu/MenuList";
 
 export default async function AdminMenuPage() {
     const [dishes, categories] = await Promise.all([
@@ -37,23 +36,7 @@ export default async function AdminMenuPage() {
                 </Link>
             </div>
 
-            <MenuToolbar categories={categories} />
-
-            {dishes.length === 0 ? (
-                <div className="rounded-3xl bg-offwhite p-14 text-center text-walnut-light shadow-soft">
-                    No dishes found.
-                </div>
-            ) : (
-                <div className="flex flex-col gap-4">
-                    {dishes.map((dish) => (
-                        <DishManagementCard
-                            key={dish.id}
-                            dish={dish}
-                            categoryLookup={categoryLookup}
-                        />
-                    ))}
-                </div>
-            )}
+            <MenuList dishes={dishes} categories={categories} categoryLookup={categoryLookup} />
         </div>
     );
 }

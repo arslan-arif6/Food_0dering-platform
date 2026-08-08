@@ -78,7 +78,7 @@ export default async function AnalyticsPage({ searchParams }: Props) {
                 description="Revenue, order volume, and popular dishes for the selected period."
             />
 
-            <OrderDateFilters />
+            <OrderDateFilters basePath="/admin/analytics" />
 
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">
                 <Card className="flex items-center gap-4">

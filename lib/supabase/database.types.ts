@@ -42,6 +42,7 @@ export type Database = {
                     image: string | null;
                     featured: boolean | null;
                     available: boolean;
+                    sold_out: boolean;
                     created_at: string;
                     updated_at: string;
                 };
@@ -53,6 +54,7 @@ export type Database = {
                     image?: string | null;
                     featured?: boolean | null;
                     available?: boolean;
+                    sold_out?: boolean;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -64,6 +66,7 @@ export type Database = {
                     image?: string | null;
                     featured?: boolean | null;
                     available?: boolean;
+                    sold_out?: boolean;
                     created_at?: string;
                     updated_at?: string;
                 };
@@ -202,7 +205,133 @@ export type Database = {
                     line_total?: number;
                 };
             };
+
+            admins: {
+                Row: {
+                    id: string;
+                    user_id: string;
+                    email: string;
+                    full_name: string | null;
+                    role: "owner" | "admin" | string;
+                    is_active: boolean;
+                    created_at: string;
+                };
+
+                Insert: {
+                    id?: string;
+                    user_id: string;
+                    email: string;
+                    full_name?: string | null;
+                    role?: "owner" | "admin" | string;
+                    is_active?: boolean;
+                    created_at?: string;
+                };
+
+                Update: {
+                    id?: string;
+                    user_id?: string;
+                    email?: string;
+                    full_name?: string | null;
+                    role?: "owner" | "admin" | string;
+                    is_active?: boolean;
+                    created_at?: string;
+                };
+            };
+
+            restaurant_settings: {
+                Row: {
+                    id: number;
+                    restaurant_name: string;
+                    description: string;
+                    phone: string;
+                    whatsapp: string;
+                    email: string;
+                    address: string;
+                    logo_url: string | null;
+                    is_active: boolean;
+                    delivery_fee: number;
+                    minimum_order: number;
+                    estimated_delivery_time: string;
+                    free_delivery_threshold: number | null;
+                    service_areas: string[];
+                    payment_cod: boolean;
+                    payment_jazzcash: boolean;
+                    payment_easypaisa: boolean;
+                    breakfast_start: string;
+                    breakfast_end: string;
+                    lunch_start: string;
+                    lunch_end: string;
+                    dinner_start: string;
+                    dinner_end: string;
+                    grace_period_minutes: number;
+                    facebook_url: string | null;
+                    instagram_url: string | null;
+                    google_maps_url: string | null;
+                    updated_at: string;
+                };
+                Insert: {
+                    id?: number;
+                    restaurant_name?: string;
+                    description?: string;
+                    phone?: string;
+                    whatsapp?: string;
+                    email?: string;
+                    address?: string;
+                    logo_url?: string | null;
+                    is_active?: boolean;
+                    delivery_fee?: number;
+                    minimum_order?: number;
+                    estimated_delivery_time?: string;
+                    free_delivery_threshold?: number | null;
+                    service_areas?: string[];
+                    payment_cod?: boolean;
+                    payment_jazzcash?: boolean;
+                    payment_easypaisa?: boolean;
+                    breakfast_start?: string;
+                    breakfast_end?: string;
+                    lunch_start?: string;
+                    lunch_end?: string;
+                    dinner_start?: string;
+                    dinner_end?: string;
+                    grace_period_minutes?: number;
+                    facebook_url?: string | null;
+                    instagram_url?: string | null;
+                    google_maps_url?: string | null;
+                    updated_at?: string;
+                };
+                Update: {
+                    id?: number;
+                    restaurant_name?: string;
+                    description?: string;
+                    phone?: string;
+                    whatsapp?: string;
+                    email?: string;
+                    address?: string;
+                    logo_url?: string | null;
+                    is_active?: boolean;
+                    delivery_fee?: number;
+                    minimum_order?: number;
+                    estimated_delivery_time?: string;
+                    free_delivery_threshold?: number | null;
+                    service_areas?: string[];
+                    payment_cod?: boolean;
+                    payment_jazzcash?: boolean;
+                    payment_easypaisa?: boolean;
+                    breakfast_start?: string;
+                    breakfast_end?: string;
+                    lunch_start?: string;
+                    lunch_end?: string;
+                    dinner_start?: string;
+                    dinner_end?: string;
+                    grace_period_minutes?: number;
+                    facebook_url?: string | null;
+                    instagram_url?: string | null;
+                    google_maps_url?: string | null;
+                    updated_at?: string;
+                };
+            };
         };
+
 
         Views: Record<string, never>;
 

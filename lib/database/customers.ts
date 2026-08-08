@@ -123,6 +123,7 @@ export async function getCustomers(): Promise<CustomerSummary[]> {
     const customerMap = buildCustomerMap(data as OrderAggregateRow[]);
 
     return Array.from(customerMap.values())
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         .map(({ orders, ...summary }) => summary)
         .sort((a, b) => (a.lastOrderAt < b.lastOrderAt ? 1 : -1));
 }

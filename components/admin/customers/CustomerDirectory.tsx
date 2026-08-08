@@ -1,6 +1,6 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useMemo, useState, Fragment } from "react";
 import Link from "next/link";
 import { Search, X, Users, ChevronLeft, ChevronRight } from "lucide-react";
 
@@ -90,48 +90,84 @@ export default function CustomerDirectory({ customers }: Props) {
                 <>
                     <div className="overflow-hidden rounded-3xl bg-offwhite shadow-soft">
                         <div className="overflow-x-auto">
-                            <table className="min-w-full">
-                                <thead className="bg-cream">
+                            <table className="min-w-full text-left">
+                                <thead className="hidden bg-cream md:table-header-group">
                                     <tr>
-                                        <th className="px-4 py-4 text-left">Customer</th>
-                                        <th className="px-4 py-4 text-left">Phone</th>
+                                        <th className="px-4 py-4">Customer</th>
+                                        <th className="px-4 py-4">Phone</th>
                                         <th className="px-4 py-4 text-center">Orders</th>
-                                        <th className="px-4 py-4 text-left">Total Spent</th>
-                                        <th className="px-4 py-4 text-left">Last Order</th>
+                                        <th className="px-4 py-4">Total Spent</th>
+                                        <th className="px-4 py-4">Last Order</th>
                                         <th className="px-4 py-4"></th>
                                     </tr>
                                 </thead>
 
                                 <tbody>
                                     {paginated.map((customer) => (
-                                        <tr
-                                            key={customer.phone}
-                                            className="border-t border-walnut/5"
-                                        >
-                                            <td className="px-4 py-4 text-walnut">
-                                                {customer.customerName}
-                                            </td>
-                                            <td className="px-4 py-4 text-walnut-light">
-                                                {customer.phone}
-                                            </td>
-                                            <td className="px-4 py-4 text-center text-walnut">
-                                                {customer.totalOrders}
-                                            </td>
-                                            <td className="px-4 py-4 text-walnut">
-                                                Rs. {customer.totalSpent.toFixed(0)}
-                                            </td>
-                                            <td className="px-4 py-4 text-walnut-light">
-                                                {new Date(customer.lastOrderAt).toLocaleDateString()}
-                                            </td>
-                                            <td className="px-4 py-4 text-right">
-                                                <Link
-                                                    href={`/admin/customers/${encodeURIComponent(customer.phone)}`}
-                                                    className="font-semibold text-sage hover:text-sage-dark"
-                                                >
-                                                    View
-                                                </Link>
-                                            </td>
-                                        </tr>
+                                        <Fragment key={customer.phone}>
+                                            {/* ---------- MOBILE CARD ---------- */}
+                                            <tr className="block border-b border-cream p-5 md:hidden last:border-0">
+                                                <td className="block">
+                                                    <div className="flex items-center justify-between">
+                                                        <span className="font-display text-lg font-semibold text-walnut">
+                                                            {customer.customerName}
+                                                        </span>
+                                                        <Link
+                                                            href={`/admin/customers/${encodeURIComponent(customer.phone)}`}
+                                                            className="rounded-full border border-sage px-4 py-1.5 text-sm font-semibold text-sage transition hover:bg-sage hover:text-offwhite"
+                                                        >
+                                                            View
+                                                        </Link>
+                                                    </div>
+
+                                                    <div className="mt-4 flex flex-col gap-2 rounded-xl bg-cream/30 p-4 text-[15px]">
+                                                        <div className="flex justify-between">
+                                                            <span className="text-walnut-light">Phone</span>
+                                                            <span className="font-medium text-walnut">{customer.phone}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-walnut-light">Orders</span>
+                                                            <span className="font-medium text-walnut">{customer.totalOrders}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-walnut-light">Total Spent</span>
+                                                            <span className="font-medium text-walnut">Rs. {customer.totalSpent.toFixed(0)}</span>
+                                                        </div>
+                                                        <div className="flex justify-between">
+                                                            <span className="text-walnut-light">Last Order</span>
+                                                            <span className="font-medium text-walnut">{new Date(customer.lastOrderAt).toLocaleDateString()}</span>
+                                                        </div>
+                                                    </div>
+                                                </td>
+                                            </tr>
+
+                                            {/* ---------- DESKTOP ROW ---------- */}
+                                            <tr className="hidden border-t border-walnut/5 md:table-row">
+                                                <td className="px-4 py-4 font-medium text-walnut">
+                                                    {customer.customerName}
+                                                </td>
+                                                <td className="px-4 py-4 text-walnut-light">
+                                                    {customer.phone}
+                                                </td>
+                                                <td className="px-4 py-4 text-center text-walnut">
+                                                    {customer.totalOrders}
+                                                </td>
+                                                <td className="px-4 py-4 text-walnut">
+                                                    Rs. {customer.totalSpent.toFixed(0)}
+                                                </td>
+                                                <td className="px-4 py-4 text-walnut-light">
+                                                    {new Date(customer.lastOrderAt).toLocaleDateString()}
+                                                </td>
+                                                <td className="px-4 py-4 text-right">
+                                                    <Link
+                                                        href={`/admin/customers/${encodeURIComponent(customer.phone)}`}
+                                                        className="font-semibold text-sage hover:text-sage-dark"
+                                                    >
+                                                        View
+                                                    </Link>
+                                                </td>
+                                            </tr>
+                                        </Fragment>
                                     ))}
                                 </tbody>
                             </table>

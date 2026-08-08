@@ -1,9 +1,10 @@
 import { NextResponse } from "next/server";
-
+import { requireAdmin } from "@/lib/supabase/admin-auth";
 import { updateAdminNotes } from "@/lib/database/orders";
 
 export async function PATCH(request: Request) {
     try {
+        await requireAdmin();
         const body = await request.json();
 
         const orderId = body.orderId as string;

@@ -2,7 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
-
+import { requireAdmin } from "@/lib/supabase/admin-auth";
 import {
     parseDishFields,
     type DishFormValues,
@@ -27,6 +27,11 @@ export type CreateDishResult =
 export async function createDishAction(
     values: DishFormSubmitValues
 ): Promise<CreateDishResult> {
+    try {
+        await requireAdmin();
+    } catch {
+        return { success: false, formError: "Not authorized." };
+    }
     const parsed = parseDishFields(values);
 
     if (!parsed.success) {
@@ -49,6 +54,7 @@ export async function createDishAction(
     }
 
     try {
+        // eslint-disable-next-line @typescript-eslint/no-unused-vars
         const { image, ...rest } = parsed.data;
         await createDish({ ...rest, imageUrl: uploadResult.url });
     } catch (error) {

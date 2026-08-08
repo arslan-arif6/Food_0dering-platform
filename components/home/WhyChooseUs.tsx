@@ -31,7 +31,7 @@ export default function WhyChooseUs() {
   return (
     <section
       id="about"
-      className="scroll-mt-24 px-5 py-20 sm:px-8 lg:py-28"
+      className="scroll-mt-24 px-4 py-14 sm:px-8 sm:py-20 lg:py-28"
     >
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center">
@@ -39,22 +39,22 @@ export default function WhyChooseUs() {
             Why Choose Us
           </p>
 
-          <h2 className="mt-3 font-display text-3xl font-semibold text-walnut sm:text-4xl">
+          <h2 className="mt-3 font-display text-2xl font-semibold leading-tight text-walnut sm:text-4xl">
             Cooked with care, not compromise
           </h2>
         </div>
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="mt-10 grid gap-4 sm:mt-14 sm:grid-cols-2 sm:gap-6 lg:grid-cols-4">
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="group rounded-3xl bg-cream/60 p-8 shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:bg-cream hover:shadow-soft-lg"
+              className="group rounded-3xl bg-cream/60 p-5 shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:bg-cream hover:shadow-soft-lg sm:p-8"
             >
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-sage text-offwhite transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                 <feature.icon className="h-7 w-7" strokeWidth={1.75} />
               </div>
 
-              <h3 className="mt-6 font-display text-xl font-semibold text-walnut">
+              <h3 className="mt-5 font-display text-lg font-semibold text-walnut sm:mt-6 sm:text-xl">
                 {feature.title}
               </h3>
 

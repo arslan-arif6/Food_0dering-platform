@@ -34,11 +34,13 @@ export default function SwitchField({
                 role="switch"
                 aria-checked={checked}
                 onClick={() => onChange(!checked)}
-                className={`relative h-7 w-12 shrink-0 rounded-full transition-colors ${checked ? "bg-sage" : "bg-walnut/15"
+                className={`relative h-7 w-12 shrink-0 rounded-full transition-colors duration-200 ease-out focus:outline-none focus-visible:ring-2 focus-visible:ring-sage/40 focus-visible:ring-offset-2 ${checked
+                    ? "bg-sage shadow-[inset_0_1px_3px_rgba(0,0,0,0.18)]"
+                    : "bg-walnut/15"
                     }`}
             >
                 <span
-                    className={`absolute top-1 h-5 w-5 rounded-full bg-offwhite shadow-soft transition-transform ${checked ? "translate-x-6" : "translate-x-1"
+                    className={`absolute top-1 h-5 w-5 rounded-full bg-offwhite shadow-md transition-transform duration-200 ease-out ${checked ? "translate-x-6 scale-105" : "translate-x-1"
                         }`}
                 />
             </button>

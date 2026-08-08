@@ -6,17 +6,19 @@ import { ArrowRight, ShoppingBag, UtensilsCrossed } from "lucide-react";
 type Props = {
     subtotal: number;
     deliveryFee: number;
+    estimatedDeliveryTime?: string;
 };
 
 export default function OrderSummary({
     subtotal,
     deliveryFee,
+    estimatedDeliveryTime = "30-45 mins",
 }: Props) {
     const total = subtotal + deliveryFee;
     const isCartEmpty = subtotal <= 0;
 
     return (
-        <aside className="sticky top-24 rounded-3xl bg-white p-6 shadow-soft">
+        <aside className="rounded-3xl bg-white p-5 shadow-soft sm:p-6 lg:sticky lg:top-24">
             <h2 className="font-display text-2xl font-semibold text-walnut">
                 Order Summary
             </h2>
@@ -52,10 +54,10 @@ export default function OrderSummary({
             </div>
 
             <div className="mt-8 rounded-2xl bg-cream p-4 text-sm text-walnut-light">
-                <p>✅ Free Delivery</p>
+                {deliveryFee === 0 && <p>✅ Free Delivery</p>}
 
                 <p className="mt-2">
-                    🚚 Estimated delivery: <strong>30–45 minutes</strong>
+                    🚚 Estimated delivery: <strong>{estimatedDeliveryTime}</strong>
                 </p>
 
                 <p className="mt-2">
@@ -66,7 +68,7 @@ export default function OrderSummary({
             {isCartEmpty ? (
                 <button
                     disabled
-                    className="mt-8 flex w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-gray-300 py-4 font-semibold text-gray-600"
+                    className="mt-8 flex min-h-14 w-full cursor-not-allowed items-center justify-center gap-2 rounded-full bg-gray-300 py-4 font-semibold text-gray-600"
                 >
                     <ShoppingBag className="h-5 w-5" />
                     Cart is Empty
@@ -75,7 +77,7 @@ export default function OrderSummary({
                 <>
                     <Link
                         href="/checkout"
-                        className="mt-8 flex w-full items-center justify-center gap-2 rounded-full bg-sage py-4 font-semibold text-offwhite transition-all duration-300 hover:-translate-y-1 hover:bg-sage-dark"
+                        className="mt-8 flex min-h-14 w-full items-center justify-center gap-2 rounded-full bg-sage py-4 font-semibold text-offwhite transition-all duration-300 hover:-translate-y-1 hover:bg-sage-dark"
                     >
                         Proceed to Checkout
                         <ArrowRight className="h-5 w-5" />
@@ -83,7 +85,7 @@ export default function OrderSummary({
 
                     <Link
                         href="/menu"
-                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-full border-2 border-sage py-4 font-semibold text-sage transition-all duration-300 hover:bg-sage hover:text-offwhite"
+                        className="mt-4 flex min-h-14 w-full items-center justify-center gap-2 rounded-full border-2 border-sage py-4 font-semibold text-sage transition-all duration-300 hover:bg-sage hover:text-offwhite"
                     >
                         <UtensilsCrossed className="h-5 w-5" />
                         Add More Dishes

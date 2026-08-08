@@ -73,6 +73,7 @@ export default async function EditDishPage({ params }: EditDishPageProps) {
                         price: String(variant.price),
                     })),
                     available: currentDish.available,
+                    soldOut: currentDish.soldOut,
                     featured: currentDish.featured,
                 }}
                 existingImageUrl={currentDish.image || undefined}

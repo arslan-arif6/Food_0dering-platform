@@ -17,10 +17,24 @@ const figtree = Figtree({
   display: "swap",
 });
 
+const siteName = "Home Made Food";
+const siteDescription =
+  "Home Made Food delivers fresh, homemade meals made with love, straight to your door. Breakfast, lunch, dinner and desserts cooked the way home should taste.";
+
 export const metadata: Metadata = {
-  title: "Home Made Food | Fresh Homemade Meals Delivered",
-  description:
-    "Home Made Food delivers fresh, homemade meals made with love, straight to your door. Breakfast, lunch, dinner and desserts cooked the way home should taste.",
+  title: `${siteName} | Fresh Homemade Meals Delivered`,
+  description: siteDescription,
+  openGraph: {
+    title: `${siteName} | Fresh Homemade Meals Delivered`,
+    description: siteDescription,
+    siteName,
+    type: "website",
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: `${siteName} | Fresh Homemade Meals Delivered`,
+    description: siteDescription,
+  },
 };
 
 export default function RootLayout({

@@ -4,12 +4,28 @@ import Link from "next/link";
 import { useMemo } from "react";
 
 import { useCart } from "@/components/cart/CartProvider";
-import { getRestaurantAvailability } from "@/lib/restaurant";
+import { getRestaurantAvailability, settingsToScheduleConfig } from "@/lib/restaurant";
+import type { RestaurantSettings } from "@/lib/database/settings";
 
-export default function CheckoutSummary() {
+type CheckoutSummaryProps = {
+    settings: RestaurantSettings | null;
+};
+
+export default function CheckoutSummary({ settings }: CheckoutSummaryProps) {
     const { cart, totalPrice } = useCart();
 
-    const availability = getRestaurantAvailability();
+    const availability = getRestaurantAvailability(
+        new Date(),
+        settingsToScheduleConfig(settings)
+    );
+
+    const deliveryFee =
+        settings?.free_delivery_threshold != null &&
+            totalPrice >= settings.free_delivery_threshold
+            ? 0
+            : settings?.delivery_fee ?? 0;
+
+    const total = totalPrice + deliveryFee;
 
     const unavailableIds = useMemo(() => {
         if (!availability.currentMeal) {
@@ -20,41 +36,28 @@ export default function CheckoutSummary() {
 
         return new Set(
             cart
-                .filter(
-                    (item) =>
-                        !item.categories.includes(currentMeal)
-                )
-                .map(
-                    (item) =>
-                        `${item.id}-${item.variantId}`
-                )
+                .filter((item) => !item.categories.includes(currentMeal))
+                .map((item) => `${item.id}-${item.variantId}`)
         );
     }, [cart, availability.currentMeal]);
 
     return (
-        <div className="sticky top-28 rounded-3xl bg-white p-8 shadow-soft">
-            <h2 className="font-display text-3xl font-semibold text-walnut">
+        <div className="rounded-3xl bg-white p-5 shadow-soft lg:sticky lg:top-28 sm:p-8">
+            <h2 className="font-display text-2xl font-semibold text-walnut sm:text-3xl">
                 Order Summary
             </h2>
 
-            <div className="mt-8 space-y-4">
+            <div className="mt-6 space-y-4 sm:mt-8">
                 {cart.map((item) => {
-                    const unavailable = unavailableIds.has(
-                        `${item.id}-${item.variantId}`
-                    );
+                    const unavailable = unavailableIds.has(`${item.id}-${item.variantId}`);
 
                     return (
                         <div
                             key={`${item.id}-${item.variantId}`}
-                            className={`flex items-center justify-between border-b pb-3 ${unavailable
-                                ? "opacity-60"
-                                : ""
-                                }`}
+                            className={`flex items-start justify-between gap-3 border-b pb-3 ${unavailable ? "opacity-60" : ""}`}
                         >
-                            <div>
-                                <p className="font-semibold text-walnut">
-                                    {item.name}
-                                </p>
+                            <div className="min-w-0">
+                                <p className="font-semibold text-walnut">{item.name}</p>
 
                                 <p className="text-sm text-walnut-light">
                                     {item.variantName} × {item.quantity}
@@ -67,7 +70,7 @@ export default function CheckoutSummary() {
                                 )}
                             </div>
 
-                            <p className="font-semibold text-sage-dark">
+                            <p className="shrink-0 font-semibold text-sage-dark">
                                 Rs. {item.price * item.quantity}
                             </p>
                         </div>
@@ -75,7 +78,7 @@ export default function CheckoutSummary() {
                 })}
             </div>
 
-            <div className="mt-8 space-y-3 border-t pt-5">
+            <div className="mt-6 space-y-3 border-t pt-5 sm:mt-8">
                 <div className="flex justify-between">
                     <span>Subtotal</span>
                     <span>Rs. {totalPrice}</span>
@@ -83,16 +86,16 @@ export default function CheckoutSummary() {
 
                 <div className="flex justify-between">
                     <span>Delivery</span>
-                    <span className="font-semibold text-green-600">
-                        FREE
-                    </span>
+                    {deliveryFee === 0 ? (
+                        <span className="font-semibold text-green-600">FREE</span>
+                    ) : (
+                        <span className="font-semibold text-walnut">Rs. {deliveryFee}</span>
+                    )}
                 </div>
 
                 <div className="flex justify-between border-t pt-4 text-xl font-bold">
                     <span>Total</span>
-                    <span className="text-sage-dark">
-                        Rs. {totalPrice}
-                    </span>
+                    <span className="text-sage-dark">Rs. {total}</span>
                 </div>
             </div>
 

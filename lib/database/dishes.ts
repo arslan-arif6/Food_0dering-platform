@@ -4,8 +4,10 @@ import type { DishFormValues, DishFormSubmitValues } from "@/lib/validations/dis
 import type { Tables } from "@/lib/supabase/database.types";
 import {
     getRestaurantAvailability,
+    settingsToScheduleConfig,
     type MealType,
 } from "@/lib/restaurant";
+import { getRestaurantSettings } from "@/lib/database/settings";
 
 export type DatabaseDishVariant = {
     id: string;
@@ -20,6 +22,7 @@ export type DatabaseDish = {
     image: string;
     featured: boolean;
     available: boolean;
+    soldOut: boolean;
     tag?: string;
     categories: string[];
     variants: DatabaseDishVariant[];
@@ -31,19 +34,21 @@ const DISH_SELECT = `
   dish_categories ( categories ( slug ) )
 `;
 
-function filterAvailableMeal(
+async function filterAvailableMeal(
     dishes: DatabaseDish[]
-): DatabaseDish[] {
-    const availability = getRestaurantAvailability();
+): Promise<DatabaseDish[]> {
+    const settings = await getRestaurantSettings();
+    const availability = getRestaurantAvailability(
+        new Date(),
+        settingsToScheduleConfig(settings)
+    );
 
     if (!availability.isOpen || !availability.currentMeal) {
         return [];
     }
 
     return dishes.filter((dish) =>
-        dish.categories.includes(
-            availability.currentMeal as MealType
-        )
+        dish.categories.includes(availability.currentMeal as MealType)
     );
 }
 
@@ -90,23 +95,9 @@ export async function getFeaturedDishes() {
     return getPublicDishes();
 }
 
-export async function getDishesByCategory(
-    category: string
-) {
-    const availability = getRestaurantAvailability();
-
-    if (
-        !availability.isOpen ||
-        availability.currentMeal !== category
-    ) {
-        return [];
-    }
-
+export async function getDishesByCategory(category: string) {
     const dishes = await getPublicDishes();
-
-    return dishes.filter((dish) =>
-        dish.categories.includes(category)
-    );
+    return dishes.filter((dish) => dish.categories.includes(category));
 }
 
 
@@ -123,6 +114,7 @@ export async function createDish(
             image: values.imageUrl,
             featured: values.featured,
             available: values.available,
+            sold_out: values.soldOut,
         })
         .select("id")
         .single();
@@ -178,6 +170,7 @@ export type DishEditRecord = {
     image: string;
     featured: boolean;
     available: boolean;
+    soldOut: boolean;
     categoryIds: string[];
     variants: DatabaseDishVariant[];
 };
@@ -217,6 +210,7 @@ export async function getDishForEdit(
         image: row.image ?? "",
         featured: row.featured ?? false,
         available: row.available,
+        soldOut: row.sold_out ?? false,
         categoryIds: (row.dish_categories ?? []).map((entry) => entry.category_id),
         variants: (row.dish_variants ?? []).map((variant) => ({
             id: variant.id,
@@ -248,6 +242,7 @@ export async function updateDish(
             image: values.imageUrl,
             featured: values.featured,
             available: values.available,
+            sold_out: values.soldOut,
         })
         .eq("id", id);
 

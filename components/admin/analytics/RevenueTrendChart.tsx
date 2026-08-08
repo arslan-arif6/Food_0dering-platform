@@ -14,11 +14,11 @@ export default function RevenueTrendChart({ points }: Props) {
     const max = Math.max(...points.map((point) => point.revenue), 1);
 
     return (
-        <div className="flex h-48 items-end gap-1.5 overflow-x-auto">
+        <div className="flex h-36 items-end gap-1.5 overflow-x-auto sm:h-48">
             {points.map((point) => (
                 <div
                     key={point.date}
-                    className="flex h-full min-w-[28px] flex-1 flex-col items-center justify-end gap-2"
+                    className="flex h-full min-w-[22px] flex-1 flex-col items-center justify-end gap-2 sm:min-w-[28px]"
                     title={`${point.date}: Rs. ${point.revenue.toFixed(0)}`}
                 >
                     <div

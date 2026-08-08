@@ -17,7 +17,13 @@ function getPageTitle(pathname: string) {
     return match?.label ?? "Admin Dashboard";
 }
 
-export default function Header({ userEmail }: { userEmail: string }) {
+export default function Header({
+    userEmail,
+    userRole,
+}: {
+    userEmail: string;
+    userRole?: string;
+}) {
     const pathname = usePathname();
     const { toggleMobileNav } = useAdminShell();
 
@@ -42,7 +48,9 @@ export default function Header({ userEmail }: { userEmail: string }) {
             <div className="flex items-center gap-3">
                 <div className="hidden text-right sm:block">
                     <p className="text-sm font-medium text-walnut">{userEmail}</p>
-                    <p className="text-xs text-walnut-light">Administrator</p>
+                    <p className="text-xs capitalize text-walnut-light">
+                        {userRole ?? "admin"}
+                    </p>
                 </div>
 
                 <div className="flex h-10 w-10 items-center justify-center rounded-full bg-sage font-display text-sm font-semibold text-offwhite">

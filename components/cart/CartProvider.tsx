@@ -60,6 +60,10 @@ export function CartProvider({
   children: React.ReactNode;
 }) {
   const [cart, setCart] = useState<CartItem[]>([]);
+  // Tracks whether the initial localStorage read has finished, so the
+  // save-effect below never fires with the empty default state and
+  // overwrites a real saved cart before it's had a chance to load.
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     try {
@@ -70,12 +74,15 @@ export function CartProvider({
       }
     } catch {
       console.error("Failed to load cart.");
+    } finally {
+      setIsHydrated(true);
     }
   }, []);
 
   useEffect(() => {
+    if (!isHydrated) return;
     localStorage.setItem("kitchenhub-cart", JSON.stringify(cart));
-  }, [cart]);
+  }, [cart, isHydrated]);
 
   const addItem = useCallback((item: CartItem) => {
     setCart((current) => {

@@ -1,0 +1,301 @@
+diff --git a/app/actions/get-order.ts b/app/actions/get-order.ts
+--- a/app/actions/get-order.ts
++++ b/app/actions/get-order.ts
+@@ -2,25 +2,39 @@
+
+ import { createServiceRoleClient } from "@/lib/supabase/service-role";
+
+-export async function getOrder(id: string) {
+-    if (!id || typeof id !== "string") {
++export async function getOrder(id: string, phone: string) {
++    if (!id || typeof id !== "string" || !phone || typeof phone !== "string") {
+         return null;
+     }
+
++    const normalizedPhone = phone.replace(/\D/g, "");
++    if (normalizedPhone.length < 10) {
++        return null;
++    }
++
+     const supabase = createServiceRoleClient();
+
+     const { data, error } = await supabase
+         .from("orders")
+         .select(`
+-            *,
++            id,
++            customer_name,
++            phone,
++            address,
++            payment_method,
++            status,
++            total,
+             order_items (
+-                *
++                id,
++                dish_name,
++                variant_name,
++                quantity,
++                line_total
+             )
+         `)
+         .eq("id", id)
+         .single();
+
+-    if (error) {
+-        console.error(error);
++    if (error || !data) {
+         return null;
+     }
+
++    const storedPhone = String(data.phone ?? "").replace(/\D/g, "");
++    if (!storedPhone || storedPhone !== normalizedPhone) {
++        return null;
++    }
++
+     return data;
+ }
+diff --git a/app/track-order/page.tsx b/app/track-order/page.tsx
+--- a/app/track-order/page.tsx
++++ b/app/track-order/page.tsx
+@@ -9,15 +9,16 @@
+ type PageProps = {
+     searchParams: Promise<{
+         id?: string;
++        phone?: string;
+     }>;
+ };
+
+ export default async function TrackOrderPage({
+     searchParams,
+ }: PageProps) {
+-    const { id } = await searchParams;
++    const { id, phone } = await searchParams;
+
+-    const order = id ? await getOrder(id) : null;
++    const order = id && phone ? await getOrder(id, phone) : null;
+
+     return (
+         <main className="min-h-screen bg-cream">
+@@ -28,7 +29,7 @@
+                 <p className="mt-4 text-[15px] leading-7 text-walnut-light sm:text-lg">
+-                    Enter your Order ID to check the latest status.
++                    Enter your Order ID and phone number to check the latest status.
+                 </p>
+
+                 <form
+@@ -41,10 +42,20 @@
+                         name="id"
+                         defaultValue={id ?? ""}
+                         placeholder="Enter Order ID"
++                        autoComplete="off"
+                         className="min-h-14 flex-1 rounded-2xl border border-sage/30 bg-white px-5 py-4 outline-none transition focus:border-sage"
+                     />
+
++                    <input
++                        name="phone"
++                        type="tel"
++                        defaultValue={phone ?? ""}
++                        placeholder="Phone Number"
++                        autoComplete="tel"
++                        className="min-h-14 flex-1 rounded-2xl border border-sage/30 bg-white px-5 py-4 outline-none transition focus:border-sage"
++                    />
++
+                     <button
+                         type="submit"
+@@ -54,7 +65,7 @@
+                     </button>
+                 </form>
+
+-                <RecentOrdersList currentId={id} />
++                <RecentOrdersList currentId={id} />
+
+                 {!id && (
+@@ -73,7 +84,7 @@
+                 )}
+
+-                {id && !order && (
++                {id && !order && (
+                     <div className="mt-8 rounded-3xl bg-offwhite p-5 text-center shadow-soft sm:mt-10 sm:p-10">
+                         <h2 className="font-display text-2xl font-semibold text-walnut">
+                             Order Not Found
+@@ -82,7 +93,7 @@
+                         <p className="mt-3 text-walnut-light">
+-                            We couldn&apos;t find an order with that ID.
++                            We couldn&apos;t find an order with those details.
+                         </p>
+                     </div>
+                 )}
+diff --git a/components/track-order/TrackOrderAutoLoad.tsx b/components/track-order/TrackOrderAutoLoad.tsx
+--- a/components/track-order/TrackOrderAutoLoad.tsx
++++ b/components/track-order/TrackOrderAutoLoad.tsx
+@@ -3,7 +3,7 @@
+ import { useEffect } from "react";
+ import { useRouter } from "next/navigation";
+
+-import { getMostRecentOrderId } from "@/lib/utils/order-tracking";
++import { getMostRecentOrder } from "@/lib/utils/order-tracking";
+
+ type TrackOrderAutoLoadProps = {
+     hasId: boolean;
+@@ -20,9 +20,10 @@
+         if (hasId) return;
+
+-        const recentId = getMostRecentOrderId();
+-        if (recentId) {
+-            router.replace(`/track-order?id=${recentId}`);
++        const recentOrder = getMostRecentOrder();
++        if (recentOrder) {
++            router.replace(
++                `/track-order?id=${encodeURIComponent(recentOrder.id)}&phone=${encodeURIComponent(recentOrder.phone)}`
++            );
+         }
+     }, [hasId, router]);
+
+diff --git a/components/track-order/RecentOrdersList.tsx b/components/track-order/RecentOrdersList.tsx
+--- a/components/track-order/RecentOrdersList.tsx
++++ b/components/track-order/RecentOrdersList.tsx
+@@ -3,14 +3,14 @@
+ import Link from "next/link";
+ import { useEffect, useState } from "react";
+
+-import { getRecentOrderIds } from "@/lib/utils/order-tracking";
++import { getRecentOrders } from "@/lib/utils/order-tracking";
+
+ type RecentOrdersListProps = {
+     currentId?: string;
+ };
+
+ export default function RecentOrdersList({ currentId }: RecentOrdersListProps) {
+-    const [ids, setIds] = useState<string[]>([]);
++    const [orders, setOrders] = useState<{ id: string; phone: string }[]>([]);
+
+     useEffect(() => {
+-        setIds(getRecentOrderIds());
++        setOrders(getRecentOrders());
+     }, []);
+
+-    if (ids.length <= 1) return null;
++    if (orders.length <= 1) return null;
+@@ -22,12 +22,12 @@
+
+             <div className="mt-3 flex flex-wrap gap-2">
+-                {ids.map((id) => {
+-                    const isCurrent = id === currentId;
++                {orders.map((order) => {
++                    const isCurrent = order.id === currentId;
+
+                     return (
+                         <Link
+-                            key={id}
+-                            href={`/track-order?id=${id}`}
++                            key={order.id}
++                            href={`/track-order?id=${encodeURIComponent(order.id)}&phone=${encodeURIComponent(order.phone)}`}
+                             aria-current={isCurrent ? "true" : undefined}
+                             className={`rounded-full px-4 py-2 text-sm font-medium transition ${isCurrent
+                                 ? "bg-sage text-offwhite"
+@@ -35,7 +35,7 @@
+                                 : "bg-offwhite text-walnut hover:bg-cream-dark"
+                                 }`}
+                         >
+-                            #{id.slice(0, 8)}
++                            #{order.id.slice(0, 8)}
+                         </Link>
+                     );
+                 })}
+diff --git a/lib/utils/order-tracking.ts b/lib/utils/order-tracking.ts
+--- a/lib/utils/order-tracking.ts
++++ b/lib/utils/order-tracking.ts
+@@ -1,43 +1,55 @@
+-// Guest order tracking helper — no accounts, no auth. Stores recent
+-// order ids in this browser's localStorage so the customer doesn't
+-// have to copy/paste an Order ID to check status after leaving the
+-// success page. Stored as an array (not just the latest id) per the
+-// plan to eventually show an "Order History" list without changing
+-// the storage format.
++// Guest order tracking helper — stores recent order ids and their
++// matching phone numbers in this browser's localStorage. The server
++// verifies the phone against the order before returning any data.
+ const STORAGE_KEY = "kitchenhub_recent_orders";
+ const MAX_RECENT_ORDERS = 5;
+
+-function readRecentOrderIds(): string[] {
++export type RecentOrder = {
++    id: string;
++    phone: string;
++};
++
++function readRecentOrders(): RecentOrder[] {
+     if (typeof window === "undefined") return [];
+
+     try {
+         const raw = window.localStorage.getItem(STORAGE_KEY);
+         if (!raw) return [];
+
+         const parsed = JSON.parse(raw);
+         if (!Array.isArray(parsed)) return [];
+
+-        return parsed.filter((item): item is string => typeof item === "string");
++        return parsed.filter(
++            (item): item is RecentOrder =>
++                typeof item === "object" &&
++                item !== null &&
++                typeof item.id === "string" &&
++                typeof item.phone === "string"
++        );
+     } catch {
+         return [];
+     }
+ }
+
+-// Called right after a successful order placement. Most-recent-first,
+-// deduplicated, capped at MAX_RECENT_ORDERS.
+-export function saveRecentOrderId(orderId: string): void {
++export function saveRecentOrderId(orderId: string, phone: string): void {
+     if (typeof window === "undefined") return;
+
+     try {
+-        const existing = readRecentOrderIds().filter((id) => id !== orderId);
+-        const updated = [orderId, ...existing].slice(0, MAX_RECENT_ORDERS);
++        const normalizedPhone = phone.replace(/\D/g, "");
++        if (!orderId || normalizedPhone.length < 10) return;
++
++        const existing = readRecentOrders().filter((order) => order.id !== orderId);
++        const updated = [
++            { id: orderId, phone: normalizedPhone },
++            ...existing,
++        ].slice(0, MAX_RECENT_ORDERS);
+         window.localStorage.setItem(STORAGE_KEY, JSON.stringify(updated));
+     } catch {
+-        // localStorage can throw (private browsing, storage full, etc).
+-        // Tracking is a convenience feature — never worth failing
+-        // checkout over, so this is intentionally swallowed.
++        // Tracking is a convenience feature — never fail checkout over it.
+     }
+ }
+
+-export function getMostRecentOrderId(): string | null {
+-    const ids = readRecentOrderIds();
+-    return ids.length > 0 ? ids[0] : null;
++export function getMostRecentOrder(): RecentOrder | null {
++    const orders = readRecentOrders();
++    return orders.length > 0 ? orders[0] : null;
+ }
+
+-// Not used yet, but kept here (not re-derived elsewhere) for a future
+-// guest "Order History" list — same storage format, no migration
+-// needed later.
+-export function getRecentOrderIds(): string[] {
+-    return readRecentOrderIds();
++export function getRecentOrders(): RecentOrder[] {
++    return readRecentOrders();
+ }
+diff --git a/components/checkout/CheckoutForm.tsx b/components/checkout/CheckoutForm.tsx
+--- a/components/checkout/CheckoutForm.tsx
++++ b/components/checkout/CheckoutForm.tsx
+@@ -130,7 +130,7 @@
+-            saveRecentOrderId(result.orderId);
++            saveRecentOrderId(result.orderId, data.phone);
+
+             clearCart();
+

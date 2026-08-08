@@ -1,34 +1,38 @@
 import Image from "next/image";
 import Link from "next/link";
 import { getCategories } from "@/lib/database/categories";
-import { getRestaurantAvailability } from "@/lib/restaurant";
+import { getRestaurantAvailability, settingsToScheduleConfig } from "@/lib/restaurant";
+import { getRestaurantSettings } from "@/lib/database/settings";
 
 export default async function Categories() {
-  const categories = await getCategories();
+  const [categories, settings] = await Promise.all([
+    getCategories(),
+    getRestaurantSettings(),
+  ]);
 
-  const availability = getRestaurantAvailability();
+  const availability = getRestaurantAvailability(
+    new Date(),
+    settingsToScheduleConfig(settings)
+  );
 
   const homepageCategories = categories.filter((category) =>
     ["breakfast", "lunch", "dinner"].includes(category.slug)
   );
 
   return (
-    <section
-      id="categories"
-      className="bg-cream/40 px-5 py-20 sm:px-8 lg:py-28"
-    >
+    <section id="categories" className="bg-cream/40 px-4 py-14 sm:px-8 sm:py-20 lg:py-28">
       <div className="mx-auto max-w-7xl">
         <div className="mx-auto max-w-2xl text-center">
           <p className="font-display text-sm font-semibold uppercase tracking-[0.2em] text-sage-dark">
             Popular Categories
           </p>
 
-          <h2 className="mt-3 font-display text-3xl font-semibold text-walnut sm:text-4xl">
-            Whatever time it is, there's a plate for it
+          <h2 className="mt-3 font-display text-2xl font-semibold leading-tight text-walnut sm:text-4xl">
+            Whatever time it is, there&apos;s a plate for it
           </h2>
         </div>
 
-        <div className="mt-14 grid gap-6 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="mt-10 grid gap-4 sm:mt-14 sm:grid-cols-2 sm:gap-6 lg:grid-cols-3">
           {homepageCategories.map((category) => {
             const isAvailable =
               availability.isOpen &&
@@ -36,7 +40,7 @@ export default async function Categories() {
 
             const Card = (
               <>
-                <div className="relative h-56 w-full">
+                <div className="relative h-44 w-full sm:h-56">
                   <Image
                     src={`/images/categories/${category.slug}.jpg`}
                     alt={category.name}
@@ -59,12 +63,12 @@ export default async function Categories() {
                   )}
                 </div>
 
-                <div className="absolute inset-x-0 bottom-0 p-5">
-                  <h3 className="font-display text-xl font-semibold text-offwhite">
+                <div className="absolute inset-x-0 bottom-0 p-4 sm:p-5">
+                  <h3 className="font-display text-lg font-semibold text-offwhite sm:text-xl">
                     {category.name}
                   </h3>
 
-                  <p className="mt-1 text-sm text-offwhite/85">
+                  <p className="mt-1 text-sm leading-5 text-offwhite/85">
                     Fresh homemade {category.name.toLowerCase()} prepared daily.
                   </p>
                 </div>

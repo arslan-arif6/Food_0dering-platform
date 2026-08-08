@@ -36,6 +36,10 @@ module.exports = {
         "4xl": "2rem",
       },
       keyframes: {
+        marquee: {
+          "0%": { transform: "translateX(0)" },
+          "100%": { transform: "translateX(-50%)" },
+        },
         steam: {
           "0%, 100%": {
             transform: "translateY(0) scaleY(1)",
@@ -66,6 +70,7 @@ module.exports = {
         },
       },
       animation: {
+        marquee: "marquee 32s linear infinite",
         steam: "steam 3.2s ease-in-out infinite",
         float: "float 6s ease-in-out infinite",
         "fade-up": "fade-up 0.7s ease-out both",
