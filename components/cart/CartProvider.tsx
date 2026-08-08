@@ -6,7 +6,6 @@ import {
   useContext,
   useEffect,
   useMemo,
-  useRef,
   useState,
 } from "react";
 
@@ -64,7 +63,7 @@ export function CartProvider({
   // Tracks whether the initial localStorage read has finished, so the
   // save-effect below never fires with the empty default state and
   // overwrites a real saved cart before it's had a chance to load.
-  const isHydrated = useRef(false);
+  const [isHydrated, setIsHydrated] = useState(false);
 
   useEffect(() => {
     try {
@@ -76,14 +75,14 @@ export function CartProvider({
     } catch {
       console.error("Failed to load cart.");
     } finally {
-      isHydrated.current = true;
+      setIsHydrated(true);
     }
   }, []);
 
   useEffect(() => {
-    if (!isHydrated.current) return;
+    if (!isHydrated) return;
     localStorage.setItem("kitchenhub-cart", JSON.stringify(cart));
-  }, [cart]);
+  }, [cart, isHydrated]);
 
   const addItem = useCallback((item: CartItem) => {
     setCart((current) => {

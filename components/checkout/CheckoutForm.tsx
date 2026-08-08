@@ -28,7 +28,7 @@ import {
 } from "lucide-react";
 
 import { toast } from "sonner";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 
 type CheckoutFormProps = {
     settings: RestaurantSettings | null;
@@ -57,6 +57,7 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
         register,
         handleSubmit,
         watch,
+        reset,
         formState: { errors, isSubmitting },
     } = useForm<CheckoutFormData>({
         resolver: zodResolver(checkoutSchema),
@@ -70,7 +71,75 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
         },
     });
 
+    const [isHydrated, setIsHydrated] = useState(false);
+
+    // Restore saved customer details after the initial client render.
+    useEffect(() => {
+        try {
+            const saved = localStorage.getItem("kitchenhub-checkout-details");
+
+            if (saved) {
+                const details = JSON.parse(saved);
+
+                if (typeof details === "object" && details !== null) {
+                    reset({
+                        fullName:
+                            typeof details.fullName === "string"
+                                ? details.fullName
+                                : "",
+                        phone:
+                            typeof details.phone === "string"
+                                ? details.phone
+                                : "",
+                        area:
+                            typeof details.area === "string"
+                                ? details.area
+                                : "",
+                        address:
+                            typeof details.address === "string"
+                                ? details.address
+                                : "",
+                        paymentMethod: defaultPaymentMethod,
+                        notes:
+                            typeof details.notes === "string"
+                                ? details.notes
+                                : "",
+                    });
+                }
+            }
+        } catch {
+            // Invalid localStorage data should never break checkout.
+        } finally {
+            setIsHydrated(true);
+        }
+    }, [reset, defaultPaymentMethod]);
+
     const payment = watch("paymentMethod");
+
+    const fullName = watch("fullName");
+    const phone = watch("phone");
+    const area = watch("area");
+    const address = watch("address");
+    const notes = watch("notes");
+
+    useEffect(() => {
+        if (!isHydrated) return;
+
+        try {
+            localStorage.setItem(
+                "kitchenhub-checkout-details",
+                JSON.stringify({
+                    fullName,
+                    phone,
+                    area,
+                    address,
+                    notes,
+                })
+            );
+        } catch {
+            // Checkout must continue even if localStorage is unavailable.
+        }
+    }, [fullName, phone, area, address, notes, isHydrated]);
 
     const router = useRouter();
 
@@ -344,7 +413,7 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
                 />
             </section>
 
-            {/* Delivery Information */}
+            {/* Delivery Information Summary */}
 
             <section className="rounded-3xl bg-sage p-5 text-offwhite shadow-soft-lg sm:p-8">
                 <h2 className="font-display text-2xl font-semibold">

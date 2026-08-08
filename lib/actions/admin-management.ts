@@ -39,6 +39,12 @@ async function requireOwner() {
 }
 
 export async function getAdmins(): Promise<{ data: AdminRow[] | null; error: string | null }> {
+    const { error: authError } = await requireOwner();
+
+    if (authError) {
+        return { data: null, error: authError };
+    }
+
     const supabase = await createSupabaseServerClient();
     const { data, error } = await supabase
         .from("admins")
