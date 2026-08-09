@@ -52,7 +52,6 @@ export default function NavigationLoader() {
 
             if (url.origin !== window.location.origin) return;
 
-            // Same-page anchors do not trigger a route transition.
             if (url.pathname === window.location.pathname) return;
 
             if (showTimerRef.current) {
@@ -86,13 +85,32 @@ export default function NavigationLoader() {
             aria-label="Loading page"
             className="pointer-events-none fixed inset-0 z-[100] flex items-center justify-center"
         >
-            <div className="absolute inset-0 bg-white/20 backdrop-blur-[1.5px]" />
+            <div className="absolute inset-0 bg-[#faf8f3]/20 backdrop-blur-[1px]" />
 
-            <div className="relative flex h-14 w-14 items-center justify-center rounded-full border border-black/5 bg-white/90 shadow-[0_8px_30px_rgba(62,49,40,0.14)]">
+            <div className="relative flex h-[76px] w-[76px] items-center justify-center rounded-[24px] border border-[#e8dcc8]/70 bg-white/95 shadow-[0_12px_40px_rgba(62,49,40,0.13)]">
+                {/* Rotating orbit */}
                 <div
-                    className="h-6 w-6 animate-spin rounded-full border-[2.5px] border-walnut/15 border-t-walnut"
+                    className="absolute inset-[13px] animate-spin rounded-full border-[1.5px] border-[#7a9e7e]/20 border-t-[#7a9e7e]"
+                    style={{ animationDuration: "1.1s" }}
                     aria-hidden="true"
                 />
+
+                {/* Orbiting dot */}
+                <div
+                    className="absolute inset-[13px] animate-spin"
+                    style={{ animationDuration: "1.1s" }}
+                    aria-hidden="true"
+                >
+                    <span className="absolute -top-[3px] left-1/2 h-[6px] w-[6px] -translate-x-1/2 rounded-full bg-[#7a9e7e] shadow-[0_0_8px_rgba(122,158,126,0.45)]" />
+                </div>
+
+                {/* Center mark */}
+                <div
+                    className="relative flex h-8 w-8 items-center justify-center rounded-full bg-[#e8dcc8]"
+                    aria-hidden="true"
+                >
+                    <div className="h-2.5 w-2.5 rounded-full bg-[#7a9e7e] shadow-[0_0_10px_rgba(122,158,126,0.35)]" />
+                </div>
             </div>
         </div>
     );
