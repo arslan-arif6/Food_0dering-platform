@@ -3,6 +3,7 @@ import { Fraunces, Figtree } from "next/font/google";
 import "./globals.css";
 import { CartProvider } from "@/components/cart/CartProvider";
 import { Toaster } from "sonner";
+import NavigationLoader from "@/components/layout/NavigationLoader";
 
 const fraunces = Fraunces({
   subsets: ["latin"],
@@ -61,16 +62,23 @@ export const metadata: Metadata = {
     follow: true,
   },
 };
+
 export default function RootLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
   return (
-    <html lang="en" className={`${fraunces.variable} ${figtree.variable}`}>
+    <html
+      lang="en"
+      className={`${fraunces.variable} ${figtree.variable}`}
+    >
       <body>
         <CartProvider>
+          <NavigationLoader />
+
           {children}
+
           <Toaster
             position="top-right"
             richColors

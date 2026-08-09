@@ -25,6 +25,7 @@ import {
     Clock,
     Truck,
     AlertCircle,
+    Loader2,
 } from "lucide-react";
 
 import { toast } from "sonner";
@@ -471,13 +472,18 @@ export default function CheckoutForm({ settings }: CheckoutFormProps) {
                 disabled={isSubmitting || unavailableItems.length > 0 || belowMinimum}
                 className="min-h-14 w-full rounded-2xl bg-sage py-4 text-base font-semibold text-white transition hover:bg-sage-dark disabled:cursor-not-allowed disabled:opacity-50 sm:text-lg"
             >
-                {isSubmitting
-                    ? "Placing Order..."
-                    : unavailableItems.length > 0
-                        ? "Remove Unavailable Items"
-                        : belowMinimum
-                            ? "Below Minimum Order"
-                            : "Place Order"}
+                {isSubmitting ? (
+                    <span className="flex items-center justify-center gap-2">
+                        <Loader2 className="h-5 w-5 animate-spin" />
+                        Placing Order...
+                    </span>
+                ) : unavailableItems.length > 0 ? (
+                    "Remove Unavailable Items"
+                ) : belowMinimum ? (
+                    "Below Minimum Order"
+                ) : (
+                    "Place Order"
+                )}
             </button>
         </form>
     );
