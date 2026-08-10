@@ -231,6 +231,15 @@ Things I'd add as the business grows, without overcomplicating what's already wo
 
 ---
 
+## 📚 Documentation
+
+For complete system architecture, features, security model,
+database design, testing, deployment, limitations, and future scope:
+
+[📄 View Project Documentation](./docs/KitchenHub_Project_Documentation.pdf)
+
+---
+
 ## Author
 
 **Arslan Arif**
