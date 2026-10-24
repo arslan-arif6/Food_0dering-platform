@@ -37,7 +37,7 @@ export default async function BusinessHours() {
       <BusinessHoursAutoRefresh />
 
       <div className="mx-auto max-w-5xl">
-        <div className="rounded-[1.75rem] bg-cream px-4 py-8 shadow-soft sm:rounded-4xl sm:px-8 sm:py-14">
+        <div className="aurora rounded-[1.75rem] border border-walnut/5 bg-offwhite px-4 py-8 shadow-soft sm:rounded-4xl sm:px-8 sm:py-14">
           <div className="flex justify-center">
             <div className="flex h-16 w-16 items-center justify-center rounded-2xl bg-sage text-offwhite">
               <Clock className="h-8 w-8" />
@@ -60,7 +60,7 @@ export default async function BusinessHours() {
               return (
                 <div
                   key={row.meal}
-                  className={`rounded-2xl p-4 shadow-soft transition ${isActive ? "bg-sage/10 ring-2 ring-sage" : "bg-offwhite"
+                  className={`rounded-2xl p-4 shadow-soft transition ${isActive ? "bg-offwhite/90 ring-2 ring-sage backdrop-blur" : "bg-offwhite/75 backdrop-blur"
                     }`}
                 >
                   <div className="flex flex-col gap-3 min-[390px]:flex-row min-[390px]:items-center min-[390px]:justify-between">

@@ -8,7 +8,7 @@ import NavigationLoader from "@/components/layout/NavigationLoader";
 const fraunces = Fraunces({
   subsets: ["latin"],
   variable: "--font-fraunces",
-  style: ["normal", "italic"],
+  style: ["italic"],
   display: "swap",
 });
 

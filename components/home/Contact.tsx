@@ -34,7 +34,7 @@ export default function Contact({ name, phone, whatsapp, email, address }: Conta
         </div>
 
         <div className="mt-10 grid gap-4 sm:mt-14 sm:grid-cols-3 sm:gap-6">
-          <div className="rounded-3xl bg-offwhite p-5 text-center shadow-soft sm:p-8">
+          <div className="aurora aurora-hover rounded-3xl border border-walnut/5 bg-offwhite p-5 text-center shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-soft-lg sm:p-8">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sage text-offwhite">
               <Phone className="h-6 w-6" strokeWidth={1.75} />
             </div>
@@ -46,7 +46,7 @@ export default function Contact({ name, phone, whatsapp, email, address }: Conta
             <p className="mt-1 text-walnut-light">{displayPhone}</p>
           </div>
 
-          <div className="rounded-3xl bg-offwhite p-5 text-center shadow-soft sm:p-8">
+          <div className="aurora aurora-hover rounded-3xl border border-walnut/5 bg-offwhite p-5 text-center shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-soft-lg sm:p-8">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sage text-offwhite">
               <Mail className="h-6 w-6" strokeWidth={1.75} />
             </div>
@@ -58,7 +58,7 @@ export default function Contact({ name, phone, whatsapp, email, address }: Conta
             <p className="mt-1 text-walnut-light">{displayEmail}</p>
           </div>
 
-          <div className="rounded-3xl bg-offwhite p-5 text-center shadow-soft sm:p-8">
+          <div className="aurora aurora-hover rounded-3xl border border-walnut/5 bg-offwhite p-5 text-center shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-soft-lg sm:p-8">
             <div className="mx-auto flex h-14 w-14 items-center justify-center rounded-2xl bg-sage text-offwhite">
               <MapPin className="h-6 w-6" strokeWidth={1.75} />
             </div>

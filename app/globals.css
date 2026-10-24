@@ -22,17 +22,152 @@ body.scroll-locked {
 }
 
 ::selection {
-  @apply bg-sage/30 text-walnut;
+  background: rgba(66, 133, 244, 0.25);
+  color: #0f0f10;
 }
 
 *:focus-visible {
-  outline: 2px solid #7a9e7e;
+  outline: 2px solid #18181b;
   outline-offset: 3px;
   border-radius: 4px;
 }
 
 .stitch-border {
-  border: 2px dashed rgba(74, 63, 53, 0.25);
+  border: 2px dashed rgba(15, 15, 16, 0.2);
+}
+
+/* ------------------------------------------------------------------
+   Aurora: soft moving blue / yellow / orange glow behind a box.
+   Usage: add "aurora" to a box (it needs a white background class).
+   Add "aurora-hover" as well to show the glow only on hover/focus/touch.
+------------------------------------------------------------------- */
+.aurora {
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+}
+
+.aurora::before,
+.aurora::after {
+  content: "";
+  position: absolute;
+  inset: -30%;
+  z-index: -1;
+  pointer-events: none;
+  filter: blur(30px);
+  will-change: transform;
+}
+
+.aurora::before {
+  background:
+    radial-gradient(38% 42% at 18% 28%, rgba(66, 133, 244, 0.55), transparent 70%),
+    radial-gradient(34% 38% at 82% 22%, rgba(255, 200, 50, 0.55), transparent 70%);
+  animation: aurora-a 11s ease-in-out infinite alternate;
+}
+
+.aurora::after {
+  background:
+    radial-gradient(38% 42% at 72% 82%, rgba(255, 125, 60, 0.5), transparent 70%),
+    radial-gradient(32% 36% at 14% 84%, rgba(120, 175, 255, 0.45), transparent 70%);
+  animation: aurora-b 14s ease-in-out infinite alternate;
+}
+
+@keyframes aurora-a {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1);
+  }
+  50% {
+    transform: translate3d(10%, -8%, 0) rotate(14deg) scale(1.2);
+  }
+  100% {
+    transform: translate3d(-10%, 8%, 0) rotate(-10deg) scale(1.1);
+  }
+}
+
+@keyframes aurora-b {
+  0% {
+    transform: translate3d(0, 0, 0) rotate(0deg) scale(1.1);
+  }
+  50% {
+    transform: translate3d(-12%, 9%, 0) rotate(-16deg) scale(1.25);
+  }
+  100% {
+    transform: translate3d(9%, -9%, 0) rotate(12deg) scale(1);
+  }
+}
+
+.aurora-hover::before,
+.aurora-hover::after {
+  opacity: 0;
+  transition: opacity 0.5s ease;
+  animation-play-state: paused;
+}
+
+.aurora-hover:hover::before,
+.aurora-hover:hover::after,
+.aurora-hover:focus-within::before,
+.aurora-hover:focus-within::after,
+.aurora-hover:active::before,
+.aurora-hover:active::after {
+  opacity: 1;
+  animation-play-state: running;
+}
+
+/* Hero: faint moving glow behind the headline */
+.hero-glow {
+  position: absolute;
+  left: 50%;
+  top: 46%;
+  z-index: -1;
+  width: min(92vw, 760px);
+  height: min(52vw, 400px);
+  transform: translate(-50%, -50%);
+  pointer-events: none;
+  filter: blur(50px);
+  opacity: 0.55;
+  background:
+    radial-gradient(45% 55% at 25% 40%, rgba(66, 133, 244, 0.55), transparent 70%),
+    radial-gradient(40% 50% at 75% 35%, rgba(255, 200, 50, 0.6), transparent 70%),
+    radial-gradient(45% 55% at 60% 80%, rgba(255, 125, 60, 0.5), transparent 70%);
+  animation: glow-drift 12s ease-in-out infinite alternate;
+}
+
+@keyframes glow-drift {
+  0% {
+    transform: translate(-54%, -52%) scale(1) rotate(0deg);
+  }
+  100% {
+    transform: translate(-46%, -46%) scale(1.18) rotate(8deg);
+  }
+}
+
+/* Hero: thin "scroll" cue line */
+.scroll-line {
+  position: relative;
+  width: 1px;
+  height: 24px;
+  overflow: hidden;
+  background: #d4d4d8;
+}
+
+.scroll-line::after {
+  content: "";
+  position: absolute;
+  left: 0;
+  top: -50%;
+  width: 1px;
+  height: 50%;
+  background: #0f0f10;
+  animation: scroll-line 1.8s ease-in-out infinite;
+}
+
+@keyframes scroll-line {
+  0% {
+    top: -50%;
+  }
+  100% {
+    top: 100%;
+  }
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -43,5 +178,13 @@ body.scroll-locked {
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
     scroll-behavior: auto !important;
+  }
+
+  /* Soft colour glows keep drifting very slowly instead of freezing */
+  .aurora::before,
+  .aurora::after,
+  .hero-glow {
+    animation-duration: 40s !important;
+    animation-iteration-count: infinite !important;
   }
 }
