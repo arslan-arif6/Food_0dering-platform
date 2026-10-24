@@ -7,7 +7,7 @@ import { Toaster } from "sonner";
 const fraunces = Fraunces({
   subsets: ["latin"],
   variable: "--font-fraunces",
-  style: ["normal", "italic"],
+  style: ["italic"],
   display: "swap",
 });
 

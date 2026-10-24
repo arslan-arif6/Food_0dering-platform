@@ -48,7 +48,7 @@ export default function WhyChooseUs() {
           {features.map((feature) => (
             <div
               key={feature.title}
-              className="group rounded-3xl bg-cream/60 p-5 shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:bg-cream hover:shadow-soft-lg sm:p-8"
+              className="aurora aurora-hover group rounded-3xl border border-walnut/5 bg-offwhite p-5 shadow-soft transition-all duration-300 hover:-translate-y-1.5 hover:shadow-soft-lg sm:p-8"
             >
               <div className="flex h-14 w-14 items-center justify-center rounded-2xl bg-sage text-offwhite transition-transform duration-300 group-hover:scale-110 group-hover:rotate-3">
                 <feature.icon className="h-7 w-7" strokeWidth={1.75} />

@@ -8,29 +8,32 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        // Theme: white + black (Antigravity style).
+        // Token names are kept so every existing component re-themes automatically.
         cream: {
-          DEFAULT: "#F5E6D3",
-          dark: "#EAD3B4",
+          DEFAULT: "#F5F5F6",
+          dark: "#E8E8EA",
         },
-        offwhite: "#FAF9F6",
+        offwhite: "#FFFFFF",
         sage: {
-          DEFAULT: "#7A9E7E",
-          dark: "#5C7F60",
-          light: "#A8C3AB",
+          DEFAULT: "#18181B",
+          dark: "#2C2C30",
+          light: "#A1A1AA",
         },
         walnut: {
-          DEFAULT: "#4A3F35",
-          light: "#6B5D4F",
+          DEFAULT: "#0F0F10",
+          light: "#6B6B72",
         },
       },
       fontFamily: {
-        display: ["var(--font-fraunces)", "serif"],
+        display: ["var(--font-figtree)", "sans-serif"],
+        fraunces: ["var(--font-fraunces)", "serif"],
         body: ["var(--font-figtree)", "sans-serif"],
       },
       boxShadow: {
-        soft: "0 10px 40px -12px rgba(74, 63, 53, 0.18)",
-        "soft-lg": "0 24px 70px -20px rgba(74, 63, 53, 0.28)",
-        tape: "0 2px 6px rgba(74, 63, 53, 0.25)",
+        soft: "0 10px 40px -12px rgba(15, 15, 16, 0.12)",
+        "soft-lg": "0 24px 70px -20px rgba(15, 15, 16, 0.22)",
+        tape: "0 2px 6px rgba(15, 15, 16, 0.2)",
       },
       borderRadius: {
         "4xl": "2rem",
@@ -58,6 +61,10 @@ module.exports = {
             transform: "translateY(-14px)",
           },
         },
+        cursor: {
+          "0%, 49%": { opacity: "1" },
+          "50%, 100%": { opacity: "0" },
+        },
         "fade-up": {
           "0%": {
             opacity: "0",
@@ -73,6 +80,7 @@ module.exports = {
         marquee: "marquee 32s linear infinite",
         steam: "steam 3.2s ease-in-out infinite",
         float: "float 6s ease-in-out infinite",
+        cursor: "cursor 1s steps(1) infinite",
         "fade-up": "fade-up 0.7s ease-out both",
       },
     },
